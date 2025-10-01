@@ -47,9 +47,11 @@ const cArr = [];
 let rainbow = false;
 let isRaining = false;
 let rainInterval = null;
+let rainIntervalMs = 500;
 let catRoundRobinIndex = 0;
 let rainbowRoundRobinIndex = 0;
 const RAIN_BATCH_SIZE = 8;
+const MAX_RAIN_BODIES = 160;
 
 function setAnimatedButtonText(text, isContinuous) {
   const $txt = $('#makeItRain .txt');
@@ -183,8 +185,9 @@ const init = function init() {
   Events.off(engine, 'afterUpdate');
   Events.on(engine, 'afterUpdate', () => {
     const h = $(window).height();
+    const w = $(window).width();
     engine.world.bodies
-      .filter(b => b.label === 'rainCat' && b.position.y > h + 200)
+      .filter(b => b.label === 'rainCat' && (b.position.y > h + 120 || b.position.x < -150 || b.position.x > w + 150))
       .forEach(b => World.remove(engine.world, b));
     // Nudge base cats if they get stuck near the floor with low vertical speed
     engine.world.bodies
@@ -209,8 +212,12 @@ const spawnRainBatch = () => {
   const width = $(window).width();
   const sx = width >= 414 ? 1 : 0.5;
   const sy = width >= 414 ? 1 : 0.5;
+  const currentRain = engine.world.bodies.reduce((n, b) => n + (b.label === 'rainCat' ? 1 : 0), 0);
+  if (currentRain >= MAX_RAIN_BODIES) return;
+  const remaining = MAX_RAIN_BODIES - currentRain;
+  const toSpawn = Math.min(RAIN_BATCH_SIZE, Math.max(0, remaining));
   const bodies = [];
-  for (let i = 0; i < RAIN_BATCH_SIZE; i++) {
+  for (let i = 0; i < toSpawn; i++) {
     const useRainbow = Math.random() < 0.2;
     const texture = useRainbow
       ? rainbow_cats[(rainbowRoundRobinIndex++) % rainbow_cats.length]
@@ -252,7 +259,7 @@ const startRain = () => {
   setAnimatedButtonText('Stop Rain', true);
   $('#makeItRain').addClass('raining');
   spawnRainBatch();
-  rainInterval = setInterval(spawnRainBatch, 500);
+  rainInterval = setInterval(spawnRainBatch, rainIntervalMs);
 };
 
 const stopRain = () => {
@@ -332,5 +339,16 @@ $(window).resize(() => {
   }
   if (pixiRenderer) {
     pixiRenderer.resize($(window).width(), $(window).height());
+  }
+});
+
+// Visibility-aware performance tuning
+document.addEventListener('visibilitychange', () => {
+  const hidden = document.hidden;
+  engine.timing.timeScale = hidden ? 0.7 : 1;
+  rainIntervalMs = hidden ? 1200 : 500;
+  if (isRaining) {
+    if (rainInterval) clearInterval(rainInterval);
+    rainInterval = setInterval(spawnRainBatch, rainIntervalMs);
   }
 });

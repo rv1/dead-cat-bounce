@@ -7,7 +7,9 @@ export class PixiCatRenderer {
       height,
       backgroundAlpha: 0,
       antialias: true,
-      powerPreference: 'high-performance'
+      powerPreference: 'high-performance',
+      resolution: Math.min(2, window.devicePixelRatio || 1),
+      autoDensity: true
     })
     document.body.appendChild(this.app.view)
     this.stage = this.app.stage
