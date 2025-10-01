@@ -284,3 +284,26 @@ a.site:hover {
         }
     }
 }
+
+// When using continuous animation (.anim-text-flow), pause on hover
+.anim-text-flow:hover {
+    span {
+        animation: none !important;
+    }
+}
+
+// During rain: animate by default, but pause animation on hover
+.raining {
+    .anim-text-flow {
+        span {
+            animation-name: anim-text-flow-keys;
+            animation-duration: 10s;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+            animation-fill-mode: forwards;
+        }
+        &:hover span {
+            animation: none !important;
+        }
+    }
+}

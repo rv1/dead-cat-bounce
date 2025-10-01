@@ -33,11 +33,11 @@ const Composites = Matter.Composites;
 const MouseConstraint = Matter.MouseConstraint;
 const Mouse = Matter.Mouse;
 let engine = Engine.create();
-const _restitution = 1.0001;
-const _friction = 1;
-const _frictionAir = 0.0001;
-const _frictionStatic = 15;
-const _density = 0.01;
+const _restitution = 0.9;
+const _friction = 0.2;
+const _frictionAir = 0.001;
+const _frictionStatic = 0.5;
+const _density = 0.0025;
 const mirain = $("#makeItRain");
 const defaultCategory = 0x0001;
 const redCategory = 0x0002;
@@ -45,6 +45,22 @@ const greenCategory = 0x0004;
 const blueCategory = 0x0008;
 const cArr = [];
 let rainbow = false;
+let isRaining = false;
+let rainInterval = null;
+let catRoundRobinIndex = 0;
+let rainbowRoundRobinIndex = 0;
+const RAIN_BATCH_SIZE = 8;
+
+function setAnimatedButtonText(text, isContinuous) {
+  const $txt = $('#makeItRain .txt');
+  const chars = $.trim(text).split("");
+  $txt.html(`<span>${chars.join('</span><span>')}</span>`);
+  if (isContinuous) {
+    $txt.removeClass('anim-text-flow-hover').addClass('anim-text-flow');
+  } else {
+    $txt.removeClass('anim-text-flow').addClass('anim-text-flow-hover');
+  }
+}
 let width = $(window).width();
 let height = $(window).height();
 let sx = width >= 414 ? 1 : 0.5;
@@ -55,12 +71,12 @@ const getRandomArbitrary = (min, max) => Math.random() * (max - min) + min;
 const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const generateCats = function generateCats(arr) {
   const width = $(window).width();
-  const height = $(window).height();
   const sx = width >= 414 ? 1 : 0.5;
   const sy = width >= 414 ? 1 : 0.5;
   let index = 0;
-  const stack = Composites.stack(0, -height * 2.55, 10, 8, getRandomArbitrary(0, 50), getRandomArbitrary(0, 50), (x, y) => {
-    index = index >= 6 ? 0 : index++;
+  const stack = Composites.stack(0, 50, 10, 1, 10, 0, (x, y) => {
+    const texture = arr[index];
+    index = (index + 1) % arr.length;
     return Bodies.circle(x, y, 100, {
       restitution: _restitution,
       friction: _friction,
@@ -68,12 +84,14 @@ const generateCats = function generateCats(arr) {
       frictionStatic: _frictionStatic,
       density: _density,
       collisionFilter: {
-        category: redCategory,
+        // Rain cats should not collide with default world boundaries (floor/walls)
+        category: blueCategory,
         mask: redCategory | greenCategory | blueCategory
       },
+      label: 'rainCat',
       render: {
         sprite: {
-          texture: arr[index++],
+          texture,
           xScale: sx,
           yScale: sy
         }
@@ -118,27 +136,32 @@ const init = function init() {
     Bodies.rectangle(width / 2, height + 50, width, 100, {
       isStatic: true
     }),
-    Bodies.rectangle(width / 2, -1000, width, 100, {
+    Bodies.rectangle(width / 2, -50, width, 100, {
       isStatic: true
     }),
-    Bodies.rectangle(-50, height / 2, 100, height, {
+    Bodies.rectangle(-100, height / 2, 200, height, {
       isStatic: true
     }),
-    Bodies.rectangle(width + 50, height / 2, 100, height, {
+    Bodies.rectangle(width + 100, height / 2, 200, height, {
       isStatic: true
     })
   ]);
   cats.forEach((i, v) => {
-    cArr[v] = Bodies.circle(Math.random() * width, Math.random() * height - height, 100, {
-      restitution: 0.75 + Math.random(),
-      friction: 1 + Math.random(),
-      //frictionAir: 0.0001,
-      frictionStatic: 0,
-      density: 0.0000000001 + Math.random(),
-      //inertia: Infinity,
+    const startX = (width / 7) * (v + 1);
+    const baseRestitution = 0.65 + Math.random() * 0.25; // 0.65 - 0.90
+    const baseFriction = 0.15 + Math.random() * 0.25;    // 0.15 - 0.40
+    const baseFrictionAir = 0.0005 + Math.random() * 0.0015; // 0.0005 - 0.002
+    const baseDensity = 0.0015 + Math.random() * 0.002;  // 0.0015 - 0.0035
+    cArr[v] = Bodies.circle(startX, 150, 100, {
+      label: 'baseCat',
+      restitution: baseRestitution,
+      friction: baseFriction,
+      frictionAir: baseFrictionAir,
+      frictionStatic: 0.2,
+      density: baseDensity,
       collisionFilter: {
         category: redCategory,
-        mask: defaultCategory
+        mask: defaultCategory | redCategory // collide with walls and other base cats
       },
       render: {
         sprite: {
@@ -149,6 +172,7 @@ const init = function init() {
       }
     });
     World.add(engine.world, cArr[v]);
+    Body.setVelocity(cArr[v], { x: 0, y: 2 });
   });
   const mouse = Mouse.create(render.canvas);
   const mouseConstraint = MouseConstraint.create(engine, {
@@ -164,52 +188,89 @@ const init = function init() {
   render.mouse = mouse;
   Engine.run(engine);
   Render.run(render);
+  // Cleanup rain cats that fall below the screen
+  Events.off(engine, 'afterUpdate');
+  Events.on(engine, 'afterUpdate', () => {
+    const h = $(window).height();
+    engine.world.bodies
+      .filter(b => b.label === 'rainCat' && b.position.y > h + 200)
+      .forEach(b => World.remove(engine.world, b));
+    // Nudge base cats if they get stuck near the floor with low vertical speed
+    engine.world.bodies
+      .filter(b => b.label === 'baseCat')
+      .forEach(b => {
+        if (b.position.y > h - 120 && Math.abs(b.velocity.y) < 1.5) {
+          Body.setVelocity(b, { x: b.velocity.x, y: -18 - Math.random() * 6 });
+          Body.setAngularVelocity(b, 0.02 * getRandomArbitrary(-5, 5));
+        }
+      });
+  });
 };
-mirain.on("click", event => {
+const spawnRainBatch = () => {
+  const width = $(window).width();
+  const sx = width >= 414 ? 1 : 0.5;
+  const sy = width >= 414 ? 1 : 0.5;
+  const bodies = [];
+  for (let i = 0; i < RAIN_BATCH_SIZE; i++) {
+    const useRainbow = Math.random() < 0.2;
+    const texture = useRainbow
+      ? rainbow_cats[(rainbowRoundRobinIndex++) % rainbow_cats.length]
+      : cats[(catRoundRobinIndex++) % cats.length];
+    const x = getRandomArbitrary(50, width - 50);
+    const y = -200 - getRandomArbitrary(0, 200);
+    const body = Bodies.circle(x, y, 100, {
+      restitution: _restitution,
+      friction: _friction,
+      frictionAir: _frictionAir,
+      frictionStatic: _frictionStatic,
+      density: _density,
+      collisionFilter: {
+        category: blueCategory,
+        mask: redCategory | greenCategory | blueCategory
+      },
+      label: 'rainCat',
+      render: {
+        sprite: {
+          texture,
+          xScale: sx,
+          yScale: sy
+        }
+      }
+    });
+    bodies.push(body);
+  }
+  World.add(engine.world, bodies);
+  bodies.forEach((body) => {
+    Body.setAngularVelocity(body, 0.02 * getRandomArbitrary(-5, 5));
+    Body.setVelocity(body, { x: getRandomArbitrary(-2, 2), y: getRandomArbitrary(18, 30) });
+  });
+};
+
+const startRain = () => {
+  if (isRaining) return;
+  isRaining = true;
   rainbow = true;
-  mirain.prop("disabled", true);
-  count1++;
-  let arr = [];
-  if (count1 >= 4) {
-    arr = rainbow_cats;
-    count1 = 0;
+  setAnimatedButtonText('Stop Rain', true);
+  $('#makeItRain').addClass('raining');
+  spawnRainBatch();
+  rainInterval = setInterval(spawnRainBatch, 500);
+};
+
+const stopRain = () => {
+  isRaining = false;
+  rainbow = false;
+  if (rainInterval) clearInterval(rainInterval);
+  rainInterval = null;
+  setAnimatedButtonText('Make It Rain', false);
+  $('#makeItRain').removeClass('raining');
+};
+
+mirain.on('click', () => {
+  if (isRaining) {
+    stopRain();
   } else {
-    arr = cats;
+    startRain();
   }
-  const audioNum = getRandomInt(1, 2);
-  const audio = document.getElementById("audio" + audioNum);
-  const c = generateCats(arr);
-  World.add(engine.world, c);
-  if (audioNum === 1) {
-    c.bodies.forEach((i, v) => {
-      Body.setAngularVelocity(i, 0.02 * getRandomArbitrary(-5, 5));
-      Body.setVelocity(i, {
-        x: 0,
-        y: 30
-      });
-    });
-  } else {
-    c.bodies.forEach((i, v) => {
-      Body.setAngularVelocity(i, 0.02 * getRandomArbitrary(-5, 5));
-      Body.setVelocity(i, {
-        x: 0,
-        y: 15
-      });
-    });
-  }
-  const playResult = audio && audio.play ? audio.play() : null;
-  if (playResult && typeof playResult.catch === 'function') {
-    playResult.catch(() => {
-      World.remove(engine.world, c);
-      mirain.prop("disabled", false);
-      rainbow = false;
-    });
-  }
-  audio.onended = () => {
-    World.remove(engine.world, c);
-    mirain.prop("disabled", false);
-    rainbow = false;
-  };
 });
 $('.txt').html((i, html) => {
   const chars = $.trim(html).split("");
@@ -217,7 +278,7 @@ $('.txt').html((i, html) => {
 });
 init();
 $(window).resize(() => {
-  if (!rainbow) {
+  if (!isRaining) {
     init();
   }
 });

@@ -70,13 +70,6 @@ module.exports = {
                 }
             },
             {
-                test: /\.(mp3|aiff|wav|ogg)$/i,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'audio/[name][contenthash][ext]'
-                }
-            },
-            {
                 test: /\.(woff|woff2|eot|ttf|otf)$/i,
                 type: 'asset/resource',
                 generator: {
