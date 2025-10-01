@@ -1,25 +1,25 @@
-import '../css/application.scss'
-import './modal.js'
-import './wobbler.js'
-import './decomp.js'
-import './pathseg.js'
+import '@/css/application.scss'
+import '@/js/modal.js'
+import '@/js/wobbler.js'
+import '@/js/decomp.js'
+import '@/js/pathseg.js'
 import Matter from 'matter-js'
 
 const cats = [
-  require("../img/cats/cat_1.png"),
-  require("../img/cats/cat_2.png"),
-  require("../img/cats/cat_3.png"),
-  require("../img/cats/cat_4.png"),
-  require("../img/cats/cat_5.png"),
-  require("../img/cats/cat_6.png")
+  require("@/img/cats/cat_1.png"),
+  require("@/img/cats/cat_2.png"),
+  require("@/img/cats/cat_3.png"),
+  require("@/img/cats/cat_4.png"),
+  require("@/img/cats/cat_5.png"),
+  require("@/img/cats/cat_6.png")
 ];
 const rainbow_cats = [
-  require("../img/rainbow/cat_1.png"),
-  require("../img/rainbow/cat_2.png"),
-  require("../img/rainbow/cat_3.png"),
-  require("../img/rainbow/cat_4.png"),
-  require("../img/rainbow/cat_5.png"),
-  require("../img/rainbow/cat_6.png")
+  require("@/img/rainbow/cat_1.png"),
+  require("@/img/rainbow/cat_2.png"),
+  require("@/img/rainbow/cat_3.png"),
+  require("@/img/rainbow/cat_4.png"),
+  require("@/img/rainbow/cat_5.png"),
+  require("@/img/rainbow/cat_6.png")
 ];
 const Engine = Matter.Engine;
 const Render = Matter.Render;

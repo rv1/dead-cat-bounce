@@ -1,3 +1,4 @@
+@use "sass:math";
 @import url('https://fonts.googleapis.com/css?family=Heebo:900|Inconsolata');
 
 body {
@@ -268,8 +269,8 @@ a.site:hover {
    */
     @keyframes anim-text-flow-keys {
         @for $i from 0 through $animationSteps {
-            #{percentage($i * (1 / $animationSteps))} {
-                color: hsla(random(365), 88, 60, 1);
+            #{math.percentage($i * math.div(1, $animationSteps))} {
+                color: hsla(math.random(365), 88%, 60%, 1);
             }
         }
     }

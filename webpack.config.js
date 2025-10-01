@@ -1,120 +1,87 @@
 const path = require('path')
 const webpack = require('webpack')
-const glob = require('glob')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
-const PurifyCSSPlugin = require('purifycss-webpack')
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
-const fs = require('fs')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 
 const PATHS = {
     source: path.join(__dirname, 'source'),
     build: path.join(__dirname, 'static')
 }
 
-const ExtractApplicationCSS = new ExtractTextPlugin(path.join('css', 'application.css'), {
-    allChunks: true
+const ExtractApplicationCSS = new MiniCssExtractPlugin({
+    filename: path.join('css', 'application.css')
 })
 
 module.exports = {
-    mode: 'production',
     entry: {
         source: path.join(PATHS.source, 'js', 'application.js')
     },
     output: {
         path: PATHS.build,
-        filename: 'js/[hash].js'
+        filename: 'js/[contenthash].js',
+        assetModuleFilename: 'assets/[hash][ext][query]'
     },
     module: {
-        rules: [{
-            test: /\.js$/,
-            exclude: /node_modules/,
-            use: {
-                loader: "babel-loader",
-                options: {
-                    presets: ['env']
+        rules: [
+            {
+                test: /index\.html$/,
+                use: [{
+                    loader: 'html-loader',
+                    options: {
+                        sources: false
+                    }
+                }]
+            },
+            {
+                test: /\.js$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: [
+                            [
+                                '@babel/preset-env',
+                                {
+                                    targets: 'defaults'
+                                }
+                            ]
+                        ]
+                    }
+                }
+            },
+            {
+                test: /\.css$/,
+                use: [MiniCssExtractPlugin.loader, 'css-loader']
+            },
+            {
+                test: /\.scss$/,
+                use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader']
+            },
+            {
+                test: /\.(png|jpe?g|gif|svg)$/i,
+                type: 'asset/resource',
+                generator: {
+                    filename: 'img/[name][contenthash][ext]'
+                }
+            },
+            {
+                test: /\.(mp3|aiff|wav|ogg)$/i,
+                type: 'asset/resource',
+                generator: {
+                    filename: 'audio/[name][contenthash][ext]'
+                }
+            },
+            {
+                test: /\.(woff|woff2|eot|ttf|otf)$/i,
+                type: 'asset/resource',
+                generator: {
+                    filename: 'fonts/[name][contenthash][ext]'
                 }
             }
-        },
-        {
-            test: /\.css$/,
-            use: ExtractApplicationCSS.extract({
-                use: [{
-                    loader: 'css-loader',
-                    options: {
-                        sourceMap: true,
-                        name: 'css/[name][hash].[ext]',
-                    }
-                }],
-                fallback: 'style-loader'
-            })
-        },
-        {
-            test: /\.scss$/,
-            use: ExtractApplicationCSS.extract({
-                use: [{
-                    loader: 'css-loader',
-                    options: {
-                        sourceMap: true,
-                        name: 'css/[name][hash].[ext]',
-                    }
-                },
-                {
-                    loader: 'sass-loader',
-                    options: {
-                        sourceMap: true,
-                        name: 'css/[name][hash].[ext]',
-                    }
-                }
-                ],
-                fallback: 'style-loader'
-            })
-        },
-        // file-loader(for images)
-        {
-            test: /\.(jpg|png|gif|svg)$/,
-            use: [{
-                loader: 'file-loader',
-                options: {
-                    name: 'img/[name][hash].[ext]',
-                }
-            }]
-        },
-        // file-loader(for audio)
-        {
-            test: /\.(mp3|aiff|wav|ogg)$/,
-            use: [{
-                loader: 'file-loader',
-                options: {
-                    name: 'audio/[name][hash].[ext]',
-                }
-            }]
-        },
-        // file-loader(for fonts)
-        {
-            test: /\.(woff|woff2|eot|ttf|otf)$/,
-            exclude: /node_modules/,
-            use: [{
-                loader: 'file-loader',
-                options: {
-                    name: 'fonts/[name][hash].[ext]',
-                    outputPath: '../'
-                }
-            }]
-        }
         ]
     },
     optimization: {
-        minimizer: [
-            new UglifyJSPlugin({
-                sourceMap: true,
-                uglifyOptions: {
-                    compress: {
-                        inline: false
-                    }
-                }
-            })
-        ],
         runtimeChunk: false,
         splitChunks: {
             cacheGroups: {
@@ -129,11 +96,18 @@ module.exports = {
         }
     },
     devServer: {
-        contentBase: path.resolve(__dirname, '.'),
+        static: path.resolve(__dirname, '.'),
         hot: true
     },
+    resolve: {
+        extensions: ['.js', '.scss'],
+        modules: [path.resolve(__dirname, 'source'), 'node_modules'],
+        alias: {
+            '@': path.resolve(__dirname, 'source')
+        }
+    },
     plugins: [
-        // Extract CSS into a separate file
+        new CleanWebpackPlugin(),
         new webpack.ProvidePlugin({
             $: 'jquery',
             jQuery: 'jquery'
@@ -142,8 +116,6 @@ module.exports = {
             filename: 'index.html',
             template: 'index.html'
         }),
-        new webpack.NamedModulesPlugin(),
-        new webpack.HotModuleReplacementPlugin(),
         ExtractApplicationCSS
     ]
 }
