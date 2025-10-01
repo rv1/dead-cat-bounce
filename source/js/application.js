@@ -5,23 +5,24 @@ import '@/js/decomp.js'
 import '@/js/pathseg.js'
 import Matter from 'matter-js'
 import { PixiCatRenderer } from '@/js/pixiRenderer.js'
+import $ from 'jquery'
+window.$ = $; window.jQuery = $;
 
-const cats = [
-  require("@/img/cats/cat_1.png"),
-  require("@/img/cats/cat_2.png"),
-  require("@/img/cats/cat_3.png"),
-  require("@/img/cats/cat_4.png"),
-  require("@/img/cats/cat_5.png"),
-  require("@/img/cats/cat_6.png")
-];
-const rainbow_cats = [
-  require("@/img/rainbow/cat_1.png"),
-  require("@/img/rainbow/cat_2.png"),
-  require("@/img/rainbow/cat_3.png"),
-  require("@/img/rainbow/cat_4.png"),
-  require("@/img/rainbow/cat_5.png"),
-  require("@/img/rainbow/cat_6.png")
-];
+import cat_1 from '@/img/cats/cat_1.png'
+import cat_2 from '@/img/cats/cat_2.png'
+import cat_3 from '@/img/cats/cat_3.png'
+import cat_4 from '@/img/cats/cat_4.png'
+import cat_5 from '@/img/cats/cat_5.png'
+import cat_6 from '@/img/cats/cat_6.png'
+import rcat_1 from '@/img/rainbow/cat_1.png'
+import rcat_2 from '@/img/rainbow/cat_2.png'
+import rcat_3 from '@/img/rainbow/cat_3.png'
+import rcat_4 from '@/img/rainbow/cat_4.png'
+import rcat_5 from '@/img/rainbow/cat_5.png'
+import rcat_6 from '@/img/rainbow/cat_6.png'
+
+const cats = [cat_1, cat_2, cat_3, cat_4, cat_5, cat_6];
+const rainbow_cats = [rcat_1, rcat_2, rcat_3, rcat_4, rcat_5, rcat_6];
 const Engine = Matter.Engine;
 const World = Matter.World;
 const Bodies = Matter.Bodies;

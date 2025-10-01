@@ -1,19 +1,18 @@
 {
   "name": "dead-cat-bounce",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "The Dead Cat Bounce Code",
   "repository": {
     "type": "git",
-    "url": "https://github.com/naeluh/dead-cat-bounce"
+    "url": "https://github.com/rv1/dead-cat-bounce"
   },
   "scripts": {
-    "dev": "webpack serve --mode development --config webpack.config.js --hot",
-    "clean": "rimraf static",
-    "prebuild": "npm run clean",
-    "build": "webpack --mode production --config webpack.config.js",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "echo \"No test specified\" && exit 0"
   },
-  "main": "webpack.config.js",
+  "main": "vite.config.ts",
   "author": "naeluh",
   "license": "MIT",
   "engines": {
@@ -25,21 +24,9 @@
     "not dead"
   ],
   "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@babel/preset-env": "^7.25.4",
-    "babel-loader": "^9.2.1",
-    "clean-webpack-plugin": "^4.0.0",
-    "css-loader": "^7.1.2",
-    "html-loader": "^5.1.0",
-    "html-webpack-plugin": "^5.6.0",
-    "mini-css-extract-plugin": "^2.9.1",
     "sass": "^1.79.1",
-    "sass-loader": "^16.0.1",
-    "style-loader": "^4.0.0",
-    "rimraf": "^5.0.10",
-    "webpack": "^5.95.0",
-    "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.2.2"
+    "sass-embedded": "^1.93.2",
+    "vite": "^5.4.20"
   },
   "dependencies": {
     "jquery": "^3.7.1",
