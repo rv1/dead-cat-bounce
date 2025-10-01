@@ -38,7 +38,6 @@ const _friction = 1;
 const _frictionAir = 0.0001;
 const _frictionStatic = 15;
 const _density = 0.01;
-const mirainbow = $("#makeItRainbow");
 const mirain = $("#makeItRain");
 const defaultCategory = 0x0001;
 const redCategory = 0x0002;
@@ -179,7 +178,6 @@ mirain.on("click", event => {
   }
   const audioNum = getRandomInt(1, 2);
   const audio = document.getElementById("audio" + audioNum);
-  audio.play();
   const c = generateCats(arr);
   World.add(engine.world, c);
   if (audioNum === 1) {
@@ -197,6 +195,14 @@ mirain.on("click", event => {
         x: 0,
         y: 15
       });
+    });
+  }
+  const playResult = audio && audio.play ? audio.play() : null;
+  if (playResult && typeof playResult.catch === 'function') {
+    playResult.catch(() => {
+      World.remove(engine.world, c);
+      mirain.prop("disabled", false);
+      rainbow = false;
     });
   }
   audio.onended = () => {

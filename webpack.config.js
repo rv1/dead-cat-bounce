@@ -29,7 +29,11 @@ module.exports = {
                 use: [{
                     loader: 'html-loader',
                     options: {
-                        sources: false
+                        sources: {
+                            list: [
+                                { tag: 'source', attribute: 'src', type: 'src' }
+                            ]
+                        }
                     }
                 }]
             },
@@ -96,7 +100,11 @@ module.exports = {
         }
     },
     devServer: {
-        static: path.resolve(__dirname, '.'),
+        static: {
+            directory: path.resolve(__dirname, '.'),
+            serveIndex: false
+        },
+        historyApiFallback: true,
         hot: true
     },
     resolve: {
