@@ -283,6 +283,29 @@ a.site:hover {
     }
 }
 
+/* Mobile tweaks */
+@media (max-width: 413px) {
+    .btn {
+        font-size: 1.0rem;
+        padding: 4px 8px;
+        margin: 0.5rem;
+        letter-spacing: 0.12rem;
+    }
+    .outline {
+        padding: 0 8px;
+        margin: 0.5rem;
+        border-width: 2px;
+        font-size: 1.2rem;
+    }
+    .right-controls {
+        padding: 0.4rem;
+    }
+    .spawn-controls {
+        gap: 0.6rem;
+        padding-right: 6px;
+    }
+}
+
 /*
  * Animation module with all animation code
  */

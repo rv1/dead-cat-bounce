@@ -73,6 +73,25 @@ let count2 = 0;
 let pixiRenderer = null;
 const getRandomArbitrary = (min, max) => Math.random() * (max - min) + min;
 const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+// Mobile-aware sizing helpers
+const getCatRadius = () => {
+  const w = $(window).width();
+  if (w < 400) return 60;
+  if (w < 768) return 80;
+  return 100;
+};
+const getRainBatchSize = () => {
+  const w = $(window).width();
+  if (w < 400) return 4;
+  if (w < 768) return 6;
+  return 8;
+};
+const getMaxRainBodies = () => {
+  const w = $(window).width();
+  if (w < 400) return 80;
+  if (w < 768) return 120;
+  return 160;
+};
 const generateCats = function generateCats(arr) {
   const width = $(window).width();
   const sx = width >= 414 ? 1 : 0.5;
@@ -142,13 +161,14 @@ const init = function init() {
       isStatic: true
     })
   ]);
+  const baseRadius = getCatRadius();
   cats.forEach((i, v) => {
     const startX = (width / 7) * (v + 1);
     const baseRestitution = 0.65 + Math.random() * 0.25; // 0.65 - 0.90
     const baseFriction = 0.15 + Math.random() * 0.25;    // 0.15 - 0.40
     const baseFrictionAir = 0.0005 + Math.random() * 0.0015; // 0.0005 - 0.002
     const baseDensity = 0.0015 + Math.random() * 0.002;  // 0.0015 - 0.0035
-    cArr[v] = Bodies.circle(startX, 150, 100, {
+    cArr[v] = Bodies.circle(startX, 150, baseRadius, {
       label: 'baseCat',
       restitution: baseRestitution,
       friction: baseFriction,
@@ -162,8 +182,8 @@ const init = function init() {
       render: {
         sprite: {
           texture: i,
-          xScale: sx,
-          yScale: sy
+          xScale: 1,
+          yScale: 1
         }
       }
     });
@@ -211,12 +231,12 @@ const init = function init() {
 };
 const spawnRainBatch = () => {
   const width = $(window).width();
-  const sx = width >= 414 ? 1 : 0.5;
-  const sy = width >= 414 ? 1 : 0.5;
   const currentRain = engine.world.bodies.reduce((n, b) => n + (b.label === 'rainCat' ? 1 : 0), 0);
-  if (currentRain >= MAX_RAIN_BODIES) return;
-  const remaining = MAX_RAIN_BODIES - currentRain;
-  const toSpawn = Math.min(RAIN_BATCH_SIZE, Math.max(0, remaining));
+  const maxRain = getMaxRainBodies();
+  if (currentRain >= maxRain) return;
+  const remaining = maxRain - currentRain;
+  const targetBatch = getRainBatchSize();
+  const toSpawn = Math.min(targetBatch, Math.max(0, remaining));
   const bodies = [];
   for (let i = 0; i < toSpawn; i++) {
     const useRainbow = Math.random() < 0.2;
@@ -225,7 +245,7 @@ const spawnRainBatch = () => {
       : cats[(catRoundRobinIndex++) % cats.length];
     const x = getRandomArbitrary(50, width - 50);
     const y = -200 - getRandomArbitrary(0, 200);
-    const body = Bodies.circle(x, y, 100, {
+    const body = Bodies.circle(x, y, getCatRadius(), {
       restitution: _restitution,
       friction: _friction,
       frictionAir: _frictionAir,
@@ -239,8 +259,8 @@ const spawnRainBatch = () => {
       render: {
         sprite: {
           texture,
-          xScale: sx,
-          yScale: sy
+          xScale: 1,
+          yScale: 1
         }
       }
     });
