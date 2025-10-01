@@ -271,6 +271,56 @@ mirain.on('click', () => {
     startRain();
   }
 });
+// Spawn a single cat inside the current viewport using round-robin texture selection
+const spawnOneCatInView = () => {
+  const w = $(window).width();
+  const h = $(window).height();
+  const useRainbow = Math.random() < 0.2;
+  const texture = useRainbow
+    ? rainbow_cats[(rainbowRoundRobinIndex++) % rainbow_cats.length]
+    : cats[(catRoundRobinIndex++) % cats.length];
+  const x = getRandomArbitrary(80, w - 80);
+  const y = getRandomArbitrary(120, h - 220);
+  const body = Bodies.circle(x, y, 100, {
+    label: 'baseCat',
+    restitution: 0.65 + Math.random() * 0.25,
+    friction: 0.15 + Math.random() * 0.25,
+    frictionAir: 0.0005 + Math.random() * 0.0015,
+    frictionStatic: 0.2,
+    density: 0.0015 + Math.random() * 0.002,
+    collisionFilter: {
+      category: redCategory,
+      mask: defaultCategory | redCategory
+    },
+    render: {
+      sprite: {
+        texture,
+        xScale: sx,
+        yScale: sy
+      }
+    }
+  });
+  World.add(engine.world, body);
+  Body.setAngularVelocity(body, 0.02 * getRandomArbitrary(-5, 5));
+  Body.setVelocity(body, { x: getRandomArbitrary(-2, 2), y: getRandomArbitrary(-3, 3) });
+};
+
+// Remove a random cat currently visible within the viewport
+const removeOneCatInView = () => {
+  const w = $(window).width();
+  const h = $(window).height();
+  const visibleCats = engine.world.bodies.filter(b =>
+    (b.label === 'baseCat' || b.label === 'rainCat') &&
+    b.position.x >= -20 && b.position.x <= w + 20 &&
+    b.position.y >= -20 && b.position.y <= h + 20
+  );
+  if (!visibleCats.length) return;
+  const idx = getRandomInt(0, visibleCats.length - 1);
+  World.remove(engine.world, visibleCats[idx]);
+};
+
+$('#spawnCat').on('click', spawnOneCatInView);
+$('#removeCat').on('click', removeOneCatInView);
 $('.txt').html((i, html) => {
   const chars = $.trim(html).split("");
   return `<span>${chars.join('</span><span>')}</span>`;

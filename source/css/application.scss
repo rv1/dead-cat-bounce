@@ -187,6 +187,49 @@ a.site:hover {
     cursor: pointer;
 }
 
+/* Spawn controls container under Make It Rain */
+/* Unified right-side controls container (Make It Rain + spawn controls) */
+.right-controls {
+    position: fixed;
+    top: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 0.7rem; /* mirror .outline margin */
+    z-index: 5;
+}
+
+/* Ensure the rain button defines the container width and aligns right */
+.right-controls #makeItRain {
+    align-self: stretch;
+    text-align: right;
+}
+
+.spawn-controls {
+    margin-top: 0.5rem;
+    padding-right: 10px;
+    display: flex;
+    gap: 1rem; /* similar spacing feel as buttons' margins */
+    width: 100%;
+    justify-content: flex-end;
+}
+
+/* Match hover behavior of #questions */
+#spawnCat:hover,
+#removeCat:hover {
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+/* Override global fixed positioning for elements inside the right-controls stack */
+.right-controls > .btn,
+.right-controls > .outline,
+.right-controls .spawn-controls > .outline {
+    position: static;
+    margin: 0;
+}
+
 #questions {
     cursor: pointer;
     left: 0;
