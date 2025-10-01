@@ -4,6 +4,7 @@ import '@/js/wobbler.js'
 import '@/js/decomp.js'
 import '@/js/pathseg.js'
 import Matter from 'matter-js'
+import { PixiCatRenderer } from '@/js/pixiRenderer.js'
 
 const cats = [
   require("@/img/cats/cat_1.png"),
@@ -22,7 +23,6 @@ const rainbow_cats = [
   require("@/img/rainbow/cat_6.png")
 ];
 const Engine = Matter.Engine;
-const Render = Matter.Render;
 const World = Matter.World;
 const Bodies = Matter.Bodies;
 const Events = Matter.Events;
@@ -67,6 +67,7 @@ let sx = width >= 414 ? 1 : 0.5;
 let sy = width >= 414 ? 1 : 0.5;
 let count1 = 0;
 let count2 = 0;
+let pixiRenderer = null;
 const getRandomArbitrary = (min, max) => Math.random() * (max - min) + min;
 const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const generateCats = function generateCats(arr) {
@@ -102,6 +103,10 @@ const generateCats = function generateCats(arr) {
 };
 const init = function init() {
   $("canvas").remove();
+  if (pixiRenderer) {
+    pixiRenderer.destroy();
+    pixiRenderer = null;
+  }
   const colorOne = `#${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
   const colorTwo = "#fff";
   const orientation = "180deg";
@@ -112,25 +117,13 @@ const init = function init() {
   World.clear(engine.world);
   Engine.clear(engine);
   engine = Engine.create({
-    //positionIterations: 4,
-    //velocityIterations: 4,
-    //constraintIterations: 4
+    positionIterations: 4,
+    velocityIterations: 6,
+    constraintIterations: 2
   });
   engine.timing.timeScale = 1
-  const render = Render.create({
-    element: document.body,
-    engine,
-    setPixelRatio: "auto",
-    options: {
-      showAngleIndicator: false,
-      showInternalEdges: false,
-      showDebug: false,
-      wireframes: false,
-      background: "transparent",
-      width,
-      height
-    }
-  });
+  // Create high-performance Pixi renderer for sprites
+  pixiRenderer = new PixiCatRenderer({ width, height, textures: { cats, rainbow_cats } });
   document.body.style.backgroundImage = `linear-gradient(${orientation}, ${colorOne}, ${colorTwo})`;
   World.add(engine.world, [
     Bodies.rectangle(width / 2, height + 50, width, 100, {
@@ -174,7 +167,7 @@ const init = function init() {
     World.add(engine.world, cArr[v]);
     Body.setVelocity(cArr[v], { x: 0, y: 2 });
   });
-  const mouse = Mouse.create(render.canvas);
+  const mouse = Mouse.create(pixiRenderer.app.view);
   const mouseConstraint = MouseConstraint.create(engine, {
     mouse,
     constraint: {
@@ -185,9 +178,7 @@ const init = function init() {
     }
   });
   World.add(engine.world, mouseConstraint);
-  render.mouse = mouse;
   Engine.run(engine);
-  Render.run(render);
   // Cleanup rain cats that fall below the screen
   Events.off(engine, 'afterUpdate');
   Events.on(engine, 'afterUpdate', () => {
@@ -204,6 +195,14 @@ const init = function init() {
           Body.setAngularVelocity(b, 0.02 * getRandomArbitrary(-5, 5));
         }
       });
+    // Sync Pixi sprites with Matter bodies
+    if (pixiRenderer) {
+      pixiRenderer.syncBodies(
+        engine.world.bodies,
+        (body) => (body.render && body.render.sprite ? body.render.sprite.texture : null),
+        (body) => (body.render && body.render.sprite ? { xScale: body.render.sprite.xScale || 1, yScale: body.render.sprite.yScale || 1 } : { xScale: 1, yScale: 1 })
+      );
+    }
   });
 };
 const spawnRainBatch = () => {
@@ -280,5 +279,8 @@ init();
 $(window).resize(() => {
   if (!isRaining) {
     init();
+  }
+  if (pixiRenderer) {
+    pixiRenderer.resize($(window).width(), $(window).height());
   }
 });
