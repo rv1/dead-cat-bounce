@@ -11,6 +11,5 @@
 .idea
 .vscode
 .eslintcache
-package-lock.json
 /static
 /dist
