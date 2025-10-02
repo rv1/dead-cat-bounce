@@ -215,9 +215,8 @@ a.site:hover {
     justify-content: flex-end;
 }
 
-/* Match hover behavior of #questions */
-#spawnCat:hover,
-#removeCat:hover {
+/* Unified button block hover */
+.button-block:hover {
     opacity: 0.5;
     cursor: pointer;
 }
@@ -230,23 +229,35 @@ a.site:hover {
     margin: 0;
 }
 
-#questions {
-    cursor: pointer;
-    left: 0;
-}
+.js-questions { cursor: pointer; }
 
-#questions:hover {
-    opacity: 0.5;
-    cursor: pointer;
-    left: 0;
-}
-
-#wobble {
+.wobble {
     top: 0;
     left: 40px;
     cursor: default;
     letter-spacing: 0.20rem;
-    display: none;
+    display: block;
+}
+
+/* Pure CSS wobble effect */
+@keyframes wobble-text-y {
+    0% { transform: translateY(-3px); }
+    50% { transform: translateY(3px); }
+    100% { transform: translateY(-3px); }
+}
+
+.wobble {
+    span {
+        position: relative;
+        display: inline-block;
+        animation: wobble-text-y 1.2s ease-in-out infinite;
+    }
+    // Stagger delays for a wave effect (support up to 64 chars)
+    @for $i from 1 through 64 {
+        span:nth-of-type(#{$i}) {
+            animation-delay: ($i - 1) * 0.06s;
+        }
+    }
 }
 
 /* SMARTPHONES LANDSCAPE */
@@ -260,7 +271,7 @@ a.site:hover {
         font-weight: normal;
         text-shadow: 3px 3px 1px rgba(0, 0, 0, 0.2);
     }
-    #wobble {
+    .wobble {
         top: 0;
         left: 40px;
         cursor: default;

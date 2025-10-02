@@ -1,8 +1,5 @@
 import '@/css/application.scss'
 import '@/js/modal.js'
-import '@/js/wobbler.js'
-import '@/js/decomp.js'
-import '@/js/pathseg.js'
 import Matter from 'matter-js'
 import { PixiCatRenderer } from '@/js/pixiRenderer.js'
 import $ from 'jquery'
@@ -28,8 +25,6 @@ const World = Matter.World;
 const Bodies = Matter.Bodies;
 const Events = Matter.Events;
 const Body = Matter.Body;
-const Svg = Matter.Svg;
-const Vertices = Matter.Vertices;
 const Composites = Matter.Composites;
 const MouseConstraint = Matter.MouseConstraint;
 const Mouse = Matter.Mouse;
@@ -191,6 +186,8 @@ const init = function init() {
     Body.setVelocity(cArr[v], { x: 0, y: 2 });
   });
   const mouse = Mouse.create(pixiRenderer.app.view);
+  // Match Pixi renderer resolution to avoid click/touch offset on high-DPR screens
+  mouse.pixelRatio = pixiRenderer.app.renderer.resolution || 1;
   const mouseConstraint = MouseConstraint.create(engine, {
     mouse,
     constraint: {
@@ -347,8 +344,8 @@ const removeOneCatInView = () => {
   World.remove(engine.world, visibleCats[idx]);
 };
 
-$('#spawnCat').on('click', spawnOneCatInView);
-$('#removeCat').on('click', removeOneCatInView);
+$('.js-spawn-cat').on('click', spawnOneCatInView);
+$('.js-remove-cat').on('click', removeOneCatInView);
 $('.txt').html((i, html) => {
   const chars = $.trim(html).split("");
   return `<span>${chars.join('</span><span>')}</span>`;
