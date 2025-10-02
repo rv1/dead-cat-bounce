@@ -112,9 +112,6 @@ export class PixiCatRenderer {
         );
       }
     }
-    // Keep debug overlay above sprites
-    if (this.debugEnabled && this.debugGraphics)
-      this.stage.addChild(this.debugGraphics);
     // remove sprites for bodies no longer present
     for (const [id, sprite] of this.bodyIdToSprite.entries()) {
       if (!seen.has(id)) {

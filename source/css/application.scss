@@ -1,27 +1,14 @@
 @use "sass:math";
 @import url("https://fonts.googleapis.com/css?family=Heebo:900|Inconsolata");
 
-body {
-  overflow: hidden;
-  margin: 0px;
-  width: 100vw;
-  height: 100vh;
-  background: -webkit-gradient(
-    linear,
-    left top,
-    left bottom,
-    from(#ef31f9),
-    to(rgba(125, 185, 232, 0))
-  );
-  background: linear-gradient(180deg, #ef31f9, rgba(125, 185, 232, 0));
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#ef31f9", endColorstr="#007db9e8", GradientType=0);
-}
+/* ==========================================================================
+   1) Base / Reset
+   ========================================================================== */
 
-body,
-html {
+html,
+body {
   height: 100vh;
   width: 100vw;
-  -webkit-box-sizing: border-box;
   box-sizing: border-box;
   padding: 0;
   margin: 0;
@@ -29,61 +16,245 @@ html {
   font-family: sans-serif;
 }
 
+body {
+  background: linear-gradient(180deg, #ef31f9, rgba(125, 185, 232, 0));
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    from(#ef31f9),
+    to(rgba(125, 185, 232, 0))
+  );
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#ef31f9", endColorstr="#007db9e8", GradientType=0);
+}
+
 canvas {
   display: block;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .wobble span {
-    animation-duration: 2.4s;
-  }
-  .anim-text-flow span {
-    animation-duration: 20s !important;
-  }
-}
+/* ==========================================================================
+   2) Modal
+   ========================================================================== */
 
 .modal {
   display: none;
   position: fixed;
   z-index: 1;
   padding-top: 100px;
-  left: 0;
-  top: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   overflow: auto;
-  background-color: rgb(0, 0, 0);
-  /* Fallback color */
   background-color: rgba(0, 0, 0, 0.5);
-  /* Black w/ opacity */
+
+  &-content {
+    position: relative;
+    margin: 0 auto;
+    background-color: #fefefe;
+    text-align: center;
+    padding: 0;
+    border: 1px solid black;
+    width: 80%;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 1);
+    animation: animatetop 0.4s;
+  }
+
+  &-header {
+    padding: 0 16px;
+    font-family: "Heebo", sans-serif;
+    text-transform: uppercase;
+    background-color: #fefefe;
+    color: #000;
+    margin-bottom: 15px;
+  }
+
+  &-body {
+    font-family: "Inconsolata", monospace;
+    margin: 0 auto;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    color: #000;
+    background-color: #fefefe;
+  }
+
+  &-footer {
+    font-family: "Inconsolata", monospace;
+    padding: 8px 16px;
+    background-color: #fefefe;
+    color: #000;
+    font-size: 0.9rem;
+  }
+
+  .close {
+    color: black;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+
+    &:hover,
+    &:focus {
+      color: #666;
+      text-decoration: none;
+    }
+  }
 }
 
-.modal-content {
-  position: relative;
+/* ==========================================================================
+   3) Typography & Links
+   ========================================================================== */
+
+h3 {
+  font-family: "Heebo", sans-serif;
+  font-size: 1.4rem;
   text-align: center;
-  margin: 0 auto;
-  text-align: center;
-  background-color: #fefefe;
-  padding: 0;
-  border: 1px solid black;
-  width: 80%;
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 1);
-  -webkit-animation-name: animatetop;
-  -webkit-animation-duration: 0.4s;
-  animation-name: animatetop;
-  animation-duration: 0.4s;
+  text-transform: uppercase;
+  letter-spacing: 0.15rem;
 }
 
-@-webkit-keyframes animatetop {
-  from {
-    top: -300px;
-    opacity: 0;
-  }
-  to {
-    top: 0;
-    opacity: 1;
+a.site {
+  color: #000;
+  text-decoration: none;
+  border-bottom: 1px solid #000;
+
+  &:hover {
+    border-bottom-color: transparent;
   }
 }
+
+/* ==========================================================================
+   4) Buttons / Controls
+   ========================================================================== */
+
+.btn {
+  position: fixed;
+  top: 0;
+  margin: 0.5rem;
+  -webkit-appearance: none;
+  border: none;
+  outline: none;
+  padding: 5px;
+  cursor: pointer;
+  background: none;
+  color: #fff;
+  font-family: "Heebo", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+  font-size: 1rem;
+  font-weight: normal;
+  text-shadow: 3px 3px 1px rgba(0, 0, 0, 0.2);
+
+  &:hover {
+    opacity: 0.5;
+  }
+}
+
+.outline {
+  position: fixed;
+  top: 0;
+  margin: 0.7rem;
+  -webkit-appearance: none;
+  border: 3px solid #fff;
+  outline: none;
+  padding: 0 10px;
+  cursor: pointer;
+  background: none;
+  color: #fff;
+  font-family: "Heebo", sans-serif;
+  text-transform: uppercase;
+  font-size: 1.7rem;
+  font-weight: normal;
+  text-shadow: 2px 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+#makeItRain {
+  right: 0;
+  cursor: pointer;
+}
+
+.js-questions {
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   5) Layout: Controls & Topbar
+   ========================================================================== */
+
+.right-controls {
+  position: fixed;
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 0.7rem;
+  z-index: 5;
+
+  #makeItRain {
+    align-self: stretch;
+    text-align: right;
+  }
+
+  > .btn,
+  > .outline,
+  .spawn-controls > .outline {
+    position: static;
+    margin: 0;
+  }
+}
+
+.spawn-controls {
+  margin-top: 0.5rem;
+  padding-right: 10px;
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  position: sticky;
+  top: env(safe-area-inset-top, 0);
+  z-index: 50;
+
+  &-left,
+  &-center,
+  &-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  &-left .wobble {
+    display: inline-flex;
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+
+  &-center {
+    flex: 0 0 auto;
+  }
+
+  &-right {
+    flex: 0 1 auto;
+    flex-wrap: wrap;
+  }
+
+  @supports (padding: max(0px)) {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+}
+
+/* ==========================================================================
+   6) Animations
+   ========================================================================== */
 
 @keyframes animatetop {
   from {
@@ -96,171 +267,6 @@ canvas {
   }
 }
 
-.close {
-  color: black;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-  color: #666;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.modal-header {
-  padding: 0px 16px;
-  font-family: "Heebo", sans-serif;
-  text-transform: uppercase;
-  background-color: #fefefe;
-  color: #000;
-  margin-bottom: 15px;
-}
-
-h3 {
-  font-family: "Heebo", sans-serif;
-  font-size: 1.4rem;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.15rem;
-  text-align: center;
-}
-
-.modal-body {
-  font-family: "Inconsolata", monospace;
-  margin: 0 auto;
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  color: #000;
-  background-color: #fefefe;
-}
-
-a.site:link {
-  color: #000;
-  text-decoration: none;
-  border-bottom: 1px solid #000;
-}
-
-a.site:visited {
-  color: #000;
-  text-decoration: none;
-  border-bottom: 1px solid #000;
-}
-
-a.site:hover {
-  color: #000;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0);
-}
-
-.modal-footer {
-  font-family: "Inconsolata", monospace;
-  padding: 8px 16px;
-  background-color: #fefefe;
-  color: #000;
-  font-size: 0.9rem;
-}
-
-.btn {
-  position: fixed;
-  top: 0;
-  margin: 0.5rem;
-  -webkit-appearance: none;
-  border: none;
-  outline: none;
-  padding: 5px 5px;
-  cursor: pointer;
-  background: none;
-  color: #fff;
-  font-family: "Heebo", sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.1rem;
-  font-size: 1rem;
-  text-shadow: 3px 3px 1px rgba(0, 0, 0, 0.2);
-  font-weight: normal;
-}
-
-.outline {
-  position: fixed;
-  top: 0;
-  margin: 0.7rem;
-  -webkit-appearance: none;
-  border: 3px solid #fff;
-  outline: none;
-  padding: 0px 10px;
-  cursor: pointer;
-  background: none;
-  color: #fff;
-  font-family: "Heebo", sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0rem;
-  font-size: 1.7rem;
-  text-shadow: 2px 2px 1px rgba(0, 0, 0, 0.2);
-  font-weight: normal;
-}
-
-#makeItRain {
-  right: 0;
-  cursor: pointer;
-}
-
-/* Spawn controls container under Make It Rain */
-/* Unified right-side controls container (Make It Rain + spawn controls) */
-.right-controls {
-  position: fixed;
-  top: 0;
-  right: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  padding: 0.7rem; /* mirror .outline margin */
-  z-index: 5;
-}
-
-/* Ensure the rain button defines the container width and aligns right */
-.right-controls #makeItRain {
-  align-self: stretch;
-  text-align: right;
-}
-
-.spawn-controls {
-  margin-top: 0.5rem;
-  padding-right: 10px;
-  display: flex;
-  gap: 1rem; /* similar spacing feel as buttons' margins */
-  width: 100%;
-  justify-content: flex-end;
-}
-
-/* Unified button block hover */
-.button-block:hover {
-  opacity: 0.5;
-  cursor: pointer;
-}
-
-/* Override global fixed positioning for elements inside the right-controls stack */
-.right-controls > .btn,
-.right-controls > .outline,
-.right-controls .spawn-controls > .outline {
-  position: static;
-  margin: 0;
-}
-
-.js-questions {
-  cursor: pointer;
-}
-
-.wobble {
-  top: 0;
-  left: 40px;
-  cursor: default;
-  letter-spacing: 0.2rem;
-  display: block;
-}
-
-/* Pure CSS wobble effect */
 @keyframes wobble-text-y {
   0% {
     transform: translateY(-3px);
@@ -274,12 +280,18 @@ a.site:hover {
 }
 
 .wobble {
+  top: 0;
+  left: 40px;
+  cursor: default;
+  letter-spacing: 0.2rem;
+  display: block;
+
   span {
     position: relative;
     display: inline-block;
     animation: wobble-text-y 1.2s ease-in-out infinite;
   }
-  // Stagger delays for a wave effect (support up to 64 chars)
+
   @for $i from 1 through 64 {
     span:nth-of-type(#{$i}) {
       animation-delay: ($i - 1) * 0.06s;
@@ -287,7 +299,59 @@ a.site:hover {
   }
 }
 
-/* SMARTPHONES LANDSCAPE */
+.anim-text-flow,
+.anim-text-flow-hover:hover {
+  $animationSteps: 250;
+  $animationDuration: 10;
+  $animationElement: span;
+  $animationElementsCount: 100;
+  $delayBetweenLetters: 0.1;
+
+  #{$animationElement} {
+    animation-name: anim-text-flow-keys;
+    animation-duration: #{$animationDuration}s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes anim-text-flow-keys {
+    @for $i from 0 through $animationSteps {
+      #{math.percentage($i * math.div(1, $animationSteps))} {
+        color: hsla(math.random(365), 88%, 60%, 1);
+      }
+    }
+  }
+
+  $totalDelayTime: $animationElementsCount * $delayBetweenLetters;
+  @for $i from 1 through $animationElementsCount {
+    #{$animationElement}:nth-of-type(#{$i}) {
+      animation-delay: #{($i * $delayBetweenLetters) - $totalDelayTime}s;
+    }
+  }
+}
+
+.anim-text-flow:hover span {
+  animation: none !important;
+}
+
+.raining .anim-text-flow {
+  span {
+    animation-name: anim-text-flow-keys;
+    animation-duration: 10s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-fill-mode: forwards;
+  }
+
+  &:hover span {
+    animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   7) Mobile / Accessibility
+   ========================================================================== */
 
 @media only screen and (min-width: 414px) {
   .btn {
@@ -295,33 +359,13 @@ a.site:hover {
     padding: 5px 10px;
     margin: 1rem;
     letter-spacing: 0.15rem;
-    font-weight: normal;
-    text-shadow: 3px 3px 1px rgba(0, 0, 0, 0.2);
   }
-  .wobble {
-    top: 0;
-    left: 40px;
-    cursor: default;
-    letter-spacing: 0.2rem;
-    display: block;
-  }
+
   .modal-content {
-    position: relative;
-    text-align: center;
-    background-color: #fefefe;
-    margin: 0 auto;
-    padding: 0;
-    border: 1px solid black;
     width: 60%;
-    box-shadow: 4px 4px 0px rgba(0, 0, 0, 1);
-    -webkit-animation-name: animatetop;
-    -webkit-animation-duration: 0.4s;
-    animation-name: animatetop;
-    animation-duration: 0.4s;
   }
 }
 
-/* Mobile tweaks */
 @media (max-width: 413px) {
   .btn {
     font-size: 1rem;
@@ -329,12 +373,14 @@ a.site:hover {
     margin: 0.5rem;
     letter-spacing: 0.12rem;
   }
+
   .outline {
     padding: 0 8px;
     margin: 0.5rem;
     border-width: 2px;
     font-size: 1.2rem;
   }
+
   .right-controls {
     padding: 0.4rem;
   }
@@ -344,75 +390,21 @@ a.site:hover {
   }
 }
 
-/*
- * Animation module with all animation code
- */
-
-.anim-text-flow,
-.anim-text-flow-hover:hover {
-  /*
-   * Animation variables
-   */
-  $animationSteps: 250;
-  $animationDuration: 10;
-  $animationElement: span;
-  $animationElementsCount: 100;
-  $delayBetweenLetters: 0.1;
-  /*
-   * Elements settings
-   */
-  #{$animationElement} {
-    animation-name: anim-text-flow-keys;
-    animation-duration: #{$animationDuration}s;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-    animation-fill-mode: forwards;
+@media (max-width: 640px) {
+  .topbar {
+    flex-wrap: wrap;
+    row-gap: 8px;
   }
-  /*
-   * Keyframe loop
-   */
-  @keyframes anim-text-flow-keys {
-    @for $i from 0 through $animationSteps {
-      #{math.percentage($i * math.div(1, $animationSteps))} {
-        color: hsla(math.random(365), 88%, 60%, 1);
-      }
-    }
+  .topbar-center {
+    order: 2;
   }
-  /*
-   * Element animation delay loop
-   */
-  $totalDelayTime: $animationElementsCount * $delayBetweenLetters;
-  @for $i from 1 through $animationElementsCount {
-    #{$animationElement}:nth-of-type(#{$i}) {
-      animation-delay: #{($i * $delayBetweenLetters) - $totalDelayTime}s;
-    }
+  .topbar-right {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
   }
 }
 
-// When using continuous animation (.anim-text-flow), pause on hover
-.anim-text-flow:hover {
-  span {
-    animation: none !important;
-  }
-}
-
-// During rain: animate by default, but pause animation on hover
-.raining {
-  .anim-text-flow {
-    span {
-      animation-name: anim-text-flow-keys;
-      animation-duration: 10s;
-      animation-iteration-count: infinite;
-      animation-direction: alternate;
-      animation-fill-mode: forwards;
-    }
-    &:hover span {
-      animation: none !important;
-    }
-  }
-}
-
-/* Prevent double-tap zoom on interactive controls */
 #makeItRain,
 .js-questions,
 .js-spawn-cat,
@@ -420,9 +412,32 @@ a.site:hover {
 .right-controls,
 .spawn-controls,
 .btn,
-button {
-  touch-action: manipulation; /* modern way to disable double-tap zoom on controls */
+button,
+.spawn-controls button,
+.right-controls .btn {
+  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  /* Avoid iOS auto-zoom due to small text on form controls */
-  font-size: 16px; /* ensure >=16px on tappable elements */
+  font-size: 16px;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wobble span {
+    animation-duration: 2.4s;
+  }
+  .anim-text-flow span {
+    animation-duration: 20s !important;
+  }
+}
+
+/* ==========================================================================
+   8) Canvas
+   ========================================================================== */
+
+body > canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: block;
 }
