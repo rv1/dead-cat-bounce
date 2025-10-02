@@ -174,6 +174,14 @@ const init = function init() {
         visible: false,
       },
     },
+    collisionFilter: {
+      category:
+        categories.baseCat |
+        (tunables.rainCat.interactable ? categories.rainCat : 0),
+      mask:
+        categories.baseCat |
+        (tunables.rainCat.interactable ? categories.rainCat : 0),
+    },
   });
   World.add(engine.world, mouseConstraint);
   // Variable-timestep physics loop using Pixi ticker for maximum refresh

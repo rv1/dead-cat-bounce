@@ -37,12 +37,13 @@ export const tunables = {
     friction: 0.2,
     frictionAir: 0.001,
     density: 0.0025,
+    interactable: true,
   },
   rain: {
     batchMs: 500,
     hiddenBatchMs: 1200,
     spawnAngularVel: 0.02,
-    spawnVelY: { min: 18, max: 30 },
+    spawnVelY: { min: 5, max: 10 },
     spawnVelX: { min: -2, max: 2 },
   },
 };
