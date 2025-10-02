@@ -2,8 +2,6 @@ import '@/css/application.scss'
 import '@/js/modal.js'
 import Matter from 'matter-js'
 import { PixiCatRenderer } from '@/js/pixiRenderer.js'
-import $ from 'jquery'
-window.$ = $; window.jQuery = $;
 
 import cat_1 from '@/img/cats/cat_1.png'
 import cat_2 from '@/img/cats/cat_2.png'
@@ -34,7 +32,7 @@ const _friction = 0.2;
 const _frictionAir = 0.001;
 const _frictionStatic = 0.5;
 const _density = 0.0025;
-const mirain = $("#makeItRain");
+const mirain = document.getElementById('makeItRain');
 const defaultCategory = 0x0001;
 const redCategory = 0x0002;
 const greenCategory = 0x0004;
@@ -50,17 +48,20 @@ const RAIN_BATCH_SIZE = 8;
 const MAX_RAIN_BODIES = 160;
 
 function setAnimatedButtonText(text, isContinuous) {
-  const $txt = $('#makeItRain .txt');
-  const chars = $.trim(text).split("");
-  $txt.html(`<span>${chars.join('</span><span>')}</span>`);
+  const txt = document.querySelector('#makeItRain .txt');
+  if (!txt) return;
+  const chars = (text || '').trim().split("");
+  txt.innerHTML = `<span>${chars.join('</span><span>')}</span>`;
   if (isContinuous) {
-    $txt.removeClass('anim-text-flow-hover').addClass('anim-text-flow');
+    txt.classList.remove('anim-text-flow-hover');
+    txt.classList.add('anim-text-flow');
   } else {
-    $txt.removeClass('anim-text-flow').addClass('anim-text-flow-hover');
+    txt.classList.remove('anim-text-flow');
+    txt.classList.add('anim-text-flow-hover');
   }
 }
-let width = $(window).width();
-let height = $(window).height();
+let width = window.innerWidth;
+let height = window.innerHeight;
 let sx = width >= 414 ? 1 : 0.5;
 let sy = width >= 414 ? 1 : 0.5;
 let count1 = 0;
@@ -70,25 +71,25 @@ const getRandomArbitrary = (min, max) => Math.random() * (max - min) + min;
 const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 // Mobile-aware sizing helpers
 const getCatRadius = () => {
-  const w = $(window).width();
+  const w = window.innerWidth;
   if (w < 400) return 60;
   if (w < 768) return 80;
   return 100;
 };
 const getRainBatchSize = () => {
-  const w = $(window).width();
+  const w = window.innerWidth;
   if (w < 400) return 4;
   if (w < 768) return 6;
   return 8;
 };
 const getMaxRainBodies = () => {
-  const w = $(window).width();
+  const w = window.innerWidth;
   if (w < 400) return 80;
   if (w < 768) return 120;
   return 160;
 };
 const generateCats = function generateCats(arr) {
-  const width = $(window).width();
+  const width = window.innerWidth;
   const sx = width >= 414 ? 1 : 0.5;
   const sy = width >= 414 ? 1 : 0.5;
   let index = 0;
@@ -119,7 +120,7 @@ const generateCats = function generateCats(arr) {
   return stack;
 };
 const init = function init() {
-  $("canvas").remove();
+  document.querySelectorAll('canvas').forEach((el) => el.remove());
   if (pixiRenderer) {
     pixiRenderer.destroy();
     pixiRenderer = null;
@@ -127,8 +128,8 @@ const init = function init() {
   const colorOne = `#${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
   const colorTwo = "#fff";
   const orientation = "180deg";
-  width = $(window).width();
-  height = $(window).height();
+  width = window.innerWidth;
+  height = window.innerHeight;
   sx = width >= 414 ? 1 : 0.5
   sy = width >= 414 ? 1 : 0.5
   World.clear(engine.world);
@@ -202,8 +203,8 @@ const init = function init() {
   // Cleanup rain cats that fall below the screen
   Events.off(engine, 'afterUpdate');
   Events.on(engine, 'afterUpdate', () => {
-    const h = $(window).height();
-    const w = $(window).width();
+    const h = window.innerHeight;
+    const w = window.innerWidth;
     engine.world.bodies
       .filter(b => b.label === 'rainCat' && (b.position.y > h + 120 || b.position.x < -150 || b.position.x > w + 150))
       .forEach(b => World.remove(engine.world, b));
@@ -227,7 +228,7 @@ const init = function init() {
   });
 };
 const spawnRainBatch = () => {
-  const width = $(window).width();
+  const width = window.innerWidth;
   const currentRain = engine.world.bodies.reduce((n, b) => n + (b.label === 'rainCat' ? 1 : 0), 0);
   const maxRain = getMaxRainBodies();
   if (currentRain >= maxRain) return;
@@ -275,7 +276,7 @@ const startRain = () => {
   isRaining = true;
   rainbow = true;
   setAnimatedButtonText('Stop Rain', true);
-  $('#makeItRain').addClass('raining');
+  document.getElementById('makeItRain')?.classList.add('raining');
   spawnRainBatch();
   rainInterval = setInterval(spawnRainBatch, rainIntervalMs);
 };
@@ -286,10 +287,10 @@ const stopRain = () => {
   if (rainInterval) clearInterval(rainInterval);
   rainInterval = null;
   setAnimatedButtonText('Make It Rain', false);
-  $('#makeItRain').removeClass('raining');
+  document.getElementById('makeItRain')?.classList.remove('raining');
 };
 
-mirain.on('click', () => {
+mirain?.addEventListener('click', () => {
   if (isRaining) {
     stopRain();
   } else {
@@ -298,8 +299,8 @@ mirain.on('click', () => {
 });
 // Spawn a single cat inside the current viewport using round-robin texture selection
 const spawnOneCatInView = () => {
-  const w = $(window).width();
-  const h = $(window).height();
+  const w = window.innerWidth;
+  const h = window.innerHeight;
   const useRainbow = Math.random() < 0.2;
   const texture = useRainbow
     ? rainbow_cats[(rainbowRoundRobinIndex++) % rainbow_cats.length]
@@ -332,8 +333,8 @@ const spawnOneCatInView = () => {
 
 // Remove a random cat currently visible within the viewport
 const removeOneCatInView = () => {
-  const w = $(window).width();
-  const h = $(window).height();
+  const w = window.innerWidth;
+  const h = window.innerHeight;
   const visibleCats = engine.world.bodies.filter(b =>
     (b.label === 'baseCat' || b.label === 'rainCat') &&
     b.position.x >= -20 && b.position.x <= w + 20 &&
@@ -344,19 +345,19 @@ const removeOneCatInView = () => {
   World.remove(engine.world, visibleCats[idx]);
 };
 
-$('.js-spawn-cat').on('click', spawnOneCatInView);
-$('.js-remove-cat').on('click', removeOneCatInView);
-$('.txt').html((i, html) => {
-  const chars = $.trim(html).split("");
-  return `<span>${chars.join('</span><span>')}</span>`;
+document.querySelector('.js-spawn-cat')?.addEventListener('click', spawnOneCatInView);
+document.querySelector('.js-remove-cat')?.addEventListener('click', removeOneCatInView);
+document.querySelectorAll('.txt').forEach((el) => {
+  const chars = (el.textContent || '').trim().split("");
+  el.innerHTML = `<span>${chars.join('</span><span>')}</span>`;
 });
 init();
-$(window).resize(() => {
+window.addEventListener('resize', () => {
   if (!isRaining) {
     init();
   }
   if (pixiRenderer) {
-    pixiRenderer.resize($(window).width(), $(window).height());
+    pixiRenderer.resize(window.innerWidth, window.innerHeight);
   }
 });
 
