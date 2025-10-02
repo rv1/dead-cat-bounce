@@ -1,6 +1,12 @@
 import "@/css/application.scss";
 import "@/js/modal.js";
 import Matter from "matter-js";
+import {
+  categories,
+  buildMasks,
+  tunables,
+  pickInRange,
+} from "@/js/physicsConfig.js";
 import { PixiCatRenderer } from "@/js/pixiRenderer.js";
 
 import cat_1 from "@/img/cats/cat_1.png";
@@ -25,24 +31,17 @@ const Body = Matter.Body;
 const MouseConstraint = Matter.MouseConstraint;
 const Mouse = Matter.Mouse;
 let engine = Engine.create();
-const _restitution = 0.9;
-const _friction = 0.2;
-const _frictionAir = 0.001;
 const _frictionStatic = 0.5;
-const _density = 0.0025;
 const mirain = document.getElementById("makeItRain");
-const defaultCategory = 0x0001;
-const redCategory = 0x0002;
-const greenCategory = 0x0004;
-const blueCategory = 0x0008;
+const defaultCategory = categories.default;
+const redCategory = categories.base;
+const blueCategory = categories.rain;
+const { baseMask, rainMask } = buildMasks();
 const cArr = [];
 let isRaining = false;
-let spawnAccumulator = 0;
-const FIXED_MS = 1000 / 60;
-let lastMS = performance.now();
+let lastSpawnMs = 0;
 let catRoundRobinIndex = 0;
 let rainbowRoundRobinIndex = 0;
-let accumulator = 0;
 
 function setAnimatedButtonText(text, isContinuous) {
   const txt = document.querySelector("#makeItRain .txt");
@@ -82,39 +81,7 @@ const getMaxRainBodies = () => {
   if (w < 768) return 120;
   return 160;
 };
-/* Unused: generator kept for reference
-const generateCats = function generateCats(arr) {
-  const width = window.innerWidth;
-  const sx = width >= 414 ? 1 : 0.5;
-  const sy = width >= 414 ? 1 : 0.5;
-  let index = 0;
-  const stack = Composites.stack(0, 50, 10, 1, 10, 0, (x, y) => {
-    const texture = arr[index];
-    index = (index + 1) % arr.length;
-    return Bodies.circle(x, y, 100, {
-      restitution: _restitution,
-      friction: _friction,
-      frictionAir: _frictionAir,
-      frictionStatic: _frictionStatic,
-      density: _density,
-      collisionFilter: {
-        // Rain cats should not collide with default world boundaries (floor/walls)
-        category: blueCategory,
-        mask: redCategory | greenCategory | blueCategory
-      },
-      label: 'rainCat',
-      render: {
-        sprite: {
-          texture,
-          xScale: sx,
-          yScale: sy
-        }
-      }
-    });
-  });
-  return stack;
-};
-*/
+
 const init = function init() {
   document.querySelectorAll("canvas").forEach((el) => el.remove());
   if (pixiRenderer) {
@@ -161,10 +128,10 @@ const init = function init() {
   const baseRadius = getCatRadius();
   cats.forEach((i, v) => {
     const startX = (width / 7) * (v + 1);
-    const baseRestitution = 0.65 + Math.random() * 0.25; // 0.65 - 0.90
-    const baseFriction = 0.15 + Math.random() * 0.25; // 0.15 - 0.40
-    const baseFrictionAir = 0.0005 + Math.random() * 0.0015; // 0.0005 - 0.002
-    const baseDensity = 0.0015 + Math.random() * 0.002; // 0.0015 - 0.0035
+    const baseRestitution = pickInRange(tunables.baseCat.restitution);
+    const baseFriction = pickInRange(tunables.baseCat.friction);
+    const baseFrictionAir = pickInRange(tunables.baseCat.frictionAir);
+    const baseDensity = pickInRange(tunables.baseCat.density);
     cArr[v] = Bodies.circle(startX, 150, baseRadius, {
       label: "baseCat",
       restitution: baseRestitution,
@@ -172,10 +139,7 @@ const init = function init() {
       frictionAir: baseFrictionAir,
       frictionStatic: 0.2,
       density: baseDensity,
-      collisionFilter: {
-        category: redCategory,
-        mask: defaultCategory | redCategory, // collide with walls and other base cats
-      },
+      collisionFilter: { category: redCategory, mask: baseMask },
       render: {
         sprite: {
           texture: i,
@@ -200,35 +164,28 @@ const init = function init() {
     },
   });
   World.add(engine.world, mouseConstraint);
-  // Fixed-timestep physics loop with render-time interpolation
+  // Variable-timestep physics loop using Pixi ticker for maximum refresh
   if (pixiRenderer?.app && !pixiRenderer.__loopInstalled) {
     pixiRenderer.__loopInstalled = true;
-    pixiRenderer.app.ticker.add(() => {
-      const now = performance.now();
-      const dt = now - lastMS;
-      lastMS = now;
-      accumulator += dt;
+    pixiRenderer.app.ticker.maxFPS = 0; // run as fast as display allows
+    pixiRenderer.app.ticker.add((ticker) => {
+      const dt = ticker.deltaMS || ticker.elapsedMS; // ms since last frame
       const hidden = document.hidden;
-      const targetRainMs = hidden ? 1200 : 500;
-      // snapshot previous state once per frame
-      const bodies = engine.world.bodies;
-      for (let i = 0; i < bodies.length; i++) {
-        const b = bodies[i];
-        if (!b.render) b.render = {};
-        b.render.__prev = { x: b.position.x, y: b.position.y, angle: b.angle };
-      }
-      while (accumulator >= FIXED_MS) {
-        Matter.Engine.update(engine, FIXED_MS);
-        if (isRaining) {
-          spawnAccumulator += FIXED_MS;
-          if (spawnAccumulator >= targetRainMs) {
-            spawnRainBatch();
-            spawnAccumulator = 0;
-          }
+      const targetRainMs = hidden
+        ? tunables.rain.hiddenBatchMs
+        : tunables.rain.batchMs;
+      // Update physics with variable timestep in ms
+      Matter.Engine.update(engine, dt);
+      if (isRaining) {
+        const now = performance.now();
+        if (!lastSpawnMs) lastSpawnMs = now;
+        if (now - lastSpawnMs >= targetRainMs) {
+          spawnRainBatch();
+          lastSpawnMs = now;
         }
-        accumulator -= FIXED_MS;
+      } else {
+        lastSpawnMs = 0;
       }
-      const alpha = accumulator / FIXED_MS;
       // cull + base bounce
       const h = window.innerHeight;
       const w = window.innerWidth;
@@ -252,20 +209,6 @@ const init = function init() {
             Matter.Body.setAngularVelocity(b, 0.02 * getRandomArbitrary(-5, 5));
           }
         });
-      // write interpolated pose for renderer
-      for (let i = 0; i < bodies.length; i++) {
-        const b = bodies[i];
-        const p =
-          b.render && b.render.__prev
-            ? b.render.__prev
-            : { x: b.position.x, y: b.position.y, angle: b.angle };
-        if (!b.render) b.render = {};
-        b.render.__interp = {
-          x: p.x + (b.position.x - p.x) * alpha,
-          y: p.y + (b.position.y - p.y) * alpha,
-          angle: p.angle + (b.angle - p.angle) * alpha,
-        };
-      }
       if (pixiRenderer) {
         pixiRenderer.syncBodies(
           engine.world.bodies,
@@ -305,15 +248,12 @@ const spawnRainBatch = () => {
     const x = getRandomArbitrary(50, width - 50);
     const y = -200 - getRandomArbitrary(0, 200);
     const body = Bodies.circle(x, y, getCatRadius(), {
-      restitution: _restitution,
-      friction: _friction,
-      frictionAir: _frictionAir,
+      restitution: tunables.rainCat.restitution,
+      friction: tunables.rainCat.friction,
+      frictionAir: tunables.rainCat.frictionAir,
       frictionStatic: _frictionStatic,
-      density: _density,
-      collisionFilter: {
-        category: blueCategory,
-        mask: redCategory | greenCategory | blueCategory,
-      },
+      density: tunables.rainCat.density,
+      collisionFilter: { category: blueCategory, mask: rainMask },
       label: "rainCat",
       render: {
         sprite: {
@@ -327,10 +267,19 @@ const spawnRainBatch = () => {
   }
   World.add(engine.world, bodies);
   bodies.forEach((body) => {
-    Body.setAngularVelocity(body, 0.02 * getRandomArbitrary(-5, 5));
+    Body.setAngularVelocity(
+      body,
+      tunables.rain.spawnAngularVel * getRandomArbitrary(-5, 5),
+    );
     Body.setVelocity(body, {
-      x: getRandomArbitrary(-2, 2),
-      y: getRandomArbitrary(18, 30),
+      x: getRandomArbitrary(
+        tunables.rain.spawnVelX.min,
+        tunables.rain.spawnVelX.max,
+      ),
+      y: getRandomArbitrary(
+        tunables.rain.spawnVelY.min,
+        tunables.rain.spawnVelY.max,
+      ),
     });
   });
 };
@@ -341,7 +290,9 @@ const startRain = () => {
   // rainbow = true;
   setAnimatedButtonText("Stop Rain", true);
   document.getElementById("makeItRain")?.classList.add("raining");
-  spawnAccumulator = 9999; // trigger immediate first batch in loop
+  // Spawn immediately, then continue on ticker cadence
+  spawnRainBatch();
+  lastSpawnMs = performance.now();
 };
 
 const stopRain = () => {

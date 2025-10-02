@@ -92,21 +92,17 @@ export class PixiCatRenderer {
         sprite.__lastScaleX = sx;
         sprite.__lastScaleY = sy;
       }
-      const interp =
-        body.render && body.render.__interp
-          ? body.render.__interp
-          : { x: body.position.x, y: body.position.y, angle: body.angle };
-      sprite.position.set(interp.x, interp.y);
-      sprite.rotation = interp.angle;
+      sprite.position.set(body.position.x, body.position.y);
+      sprite.rotation = body.angle;
       seen.add(body.id);
       if (this.debugEnabled && this.debugGraphics && body.circleRadius) {
-        const interp =
-          body.render && body.render.__interp
-            ? body.render.__interp
-            : { x: body.position.x, y: body.position.y };
         const color = body.label === "rainCat" ? 0xff00ff : 0x00ff00;
         this.debugGraphics.lineStyle(2, color, 0.9);
-        this.debugGraphics.drawCircle(interp.x, interp.y, body.circleRadius);
+        this.debugGraphics.drawCircle(
+          body.position.x,
+          body.position.y,
+          body.circleRadius,
+        );
       }
     }
     // Keep debug overlay above sprites
