@@ -1,85 +1,75 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
     <title>CAT BOUNCE!</title>
-
-    <!-- META -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Cat Bounce! A website of bouncing cats.">
-    <meta property="fb:app_id" content="1841401412744959" />
-    <meta property="fb:admins" content="502943874" />
-
-    <!-- Facebook -->
-    <meta property="og:title" content="CAT BOUNCE!" />
-    <meta property="og:url" content="https://www.cat-bounce.com" />
-    <meta property="og:site_name" content="CAT BOUNCE!" />
-    <meta property="og:type" content="website" />
-    <meta property="og:description" content="It's Cat Bounce, what more do you need to know?" />
-    <meta property="og:image" content="https://www.cat-bounce.com/catbounce.png" />
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="CAT BOUNCE!">
-    <meta name="twitter:url" content="https://www.cat-bounce.com">
-    <meta name="twitter:description" content="It's Cat Bounce, what more do you need to know?">
-    <meta name="twitter:image:src" content="https://www.cat-bounce.com/catbounce.png">
-    <link rel="image_src" href="catbounce.png" />
-
     <!-- CSS -->
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-    <link rel="shortcut icon" href="https://www.cat-bounce.com/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+    <link rel="shortcut icon" href="https://www.cat-bounce.com/favicon.ico" />
+  </head>
 
-</head>
-
-<body>
+  <body>
     <!-- OVERLAY -->
-    <div id="myModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <span class="close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <h3 id="modal-title">
-                    <span class="txt anim-text-flow">CAT BOUNCE!</span>
-                </h3>
-                <p>1. Click &nbsp;2. Drag &nbsp;3. Bounce!
-                </p>
-                <p>[ more force = more bounce ]</p>
-            </div>
-
-            <div class="modal-footer">
-                <p>
-                    <a class="site" href="https://github.com/rv1/dead-cat-bounce" target="_blank">rv1/dead-cat-bounce</a> &#8226;
-                    forked from: <a class="site" href="https://github.com/naeluh/dead-cat-bounce" target="_blank">naeluh/dead-cat-bounce</a>
-                </p>
-                <br>
-            </div>
-
+    <div
+      id="myModal"
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="close">&times;</span>
         </div>
+        <div class="modal-body">
+          <h3 id="modal-title">
+            <span class="txt anim-text-flow">CAT BOUNCE!</span>
+          </h3>
+          <p>1. Click &nbsp;2. Drag &nbsp;3. Bounce!</p>
+          <p>[ more force = more bounce ]</p>
+        </div>
+
+        <div class="modal-footer">
+          <p>
+            <a
+              class="site"
+              href="https://github.com/rv1/dead-cat-bounce"
+              target="_blank"
+              >rv1/dead-cat-bounce</a
+            >
+            &#8226; forked from:
+            <a
+              class="site"
+              href="https://github.com/naeluh/dead-cat-bounce"
+              target="_blank"
+              >naeluh/dead-cat-bounce</a
+            >
+          </p>
+          <br />
+        </div>
+      </div>
     </div>
     <!-- END OVERLAY -->
     <div class="btn italic wobble">
-        <span>C</span><span>a</span><span>t</span><span>&nbsp;</span><span>B</span><span>o</span><span>u</span><span>n</span><span>c</span><span>e</span><span>!</span>
+      <span>C</span><span>a</span><span>t</span><span>&nbsp;</span><span>B</span
+      ><span>o</span><span>u</span><span>n</span><span>c</span><span>e</span
+      ><span>!</span>
     </div>
 
     <button class="outline button-block js-questions">?</button>
 
     <div class="right-controls">
-        <button id="makeItRain" class="btn italic">
-            <span class="txt anim-text-flow-hover">Make It Rain</span>
-        </button>
-        <div id="spawnControls" class="spawn-controls">
-            <button class="outline button-block js-remove-cat">-</button>
-            <button class="outline button-block js-spawn-cat">+</button>
-        </div>
+      <button id="makeItRain" class="btn italic">
+        <span class="txt anim-text-flow-hover">Make It Rain</span>
+      </button>
+      <div id="spawnControls" class="spawn-controls">
+        <button class="outline button-block js-remove-cat">-</button>
+        <button class="outline button-block js-spawn-cat">+</button>
+      </div>
     </div>
 
     <script type="module" src="/source/js/application.js"></script>
-</body>
-
+  </body>
 </html>
