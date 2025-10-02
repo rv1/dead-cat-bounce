@@ -33,10 +33,9 @@ const Mouse = Matter.Mouse;
 let engine = Engine.create();
 const _frictionStatic = 0.5;
 const mirain = document.getElementById("makeItRain");
-const defaultCategory = categories.default;
-const redCategory = categories.base;
-const blueCategory = categories.rain;
-const { baseMask, rainMask } = buildMasks();
+const baseCatCategory = categories.baseCat;
+const rainCatCategory = categories.rainCat;
+const { baseCatMask, rainCatMask } = buildMasks();
 const cArr = [];
 let isRaining = false;
 let lastSpawnMs = 0;
@@ -139,7 +138,7 @@ const init = function init() {
       frictionAir: baseFrictionAir,
       frictionStatic: 0.2,
       density: baseDensity,
-      collisionFilter: { category: redCategory, mask: baseMask },
+      collisionFilter: { category: baseCatCategory, mask: baseCatMask },
       render: {
         sprite: {
           texture: i,
@@ -253,7 +252,7 @@ const spawnRainBatch = () => {
       frictionAir: tunables.rainCat.frictionAir,
       frictionStatic: _frictionStatic,
       density: tunables.rainCat.density,
-      collisionFilter: { category: blueCategory, mask: rainMask },
+      collisionFilter: { category: rainCatCategory, mask: rainCatMask },
       label: "rainCat",
       render: {
         sprite: {
@@ -327,8 +326,8 @@ const spawnOneCatInView = () => {
     frictionStatic: 0.2,
     density: 0.0015 + Math.random() * 0.002,
     collisionFilter: {
-      category: redCategory,
-      mask: defaultCategory | redCategory,
+      category: baseCatCategory,
+      mask: baseCatMask,
     },
     render: {
       sprite: {

@@ -2,45 +2,45 @@
 // Simple switches (true/false) and numbers are easiest to experiment with.
 
 export const categories = {
-  default: 0x0001,
-  base: 0x0002,
-  green: 0x0004,
-  rain: 0x0008,
+  worldBoundary: 0x0001,
+  baseCat: 0x0002,
+  obstacle: 0x0004,
+  rainCat: 0x0008,
 };
 
 // Collision masks describe what each category collides with.
 // If unsure, leave as-is and just toggle booleans below.
 export const collide = {
   // Base cats collide with world boundaries and other base cats
-  base: {
-    withDefault: true,
-    withBase: true,
-    withGreen: false,
-    withRain: false,
+  baseCat: {
+    withWorldBoundary: true,
+    withBaseCat: true,
+    withObstacle: false,
+    withRainCat: false,
   },
-  // Rain cats fall through world boundaries and base cats, can bounce with rain/green
-  rain: {
-    withDefault: false,
-    withBase: false,
-    withGreen: true,
-    withRain: true,
+  // Rain cats fall through world boundaries and base cats, can bounce with rain/obstacle
+  rainCat: {
+    withWorldBoundary: false,
+    withBaseCat: false,
+    withObstacle: true,
+    withRainCat: true,
   },
 };
 
 // Build bitmasks from booleans above
 export function buildMasks() {
-  const { default: DEF, base: BASE, green: GREEN, rain: RAIN } = categories;
-  const baseMask =
-    (collide.base.withDefault ? DEF : 0) |
-    (collide.base.withBase ? BASE : 0) |
-    (collide.base.withGreen ? GREEN : 0) |
-    (collide.base.withRain ? RAIN : 0);
-  const rainMask =
-    (collide.rain.withDefault ? DEF : 0) |
-    (collide.rain.withBase ? BASE : 0) |
-    (collide.rain.withGreen ? GREEN : 0) |
-    (collide.rain.withRain ? RAIN : 0);
-  return { baseMask, rainMask };
+  const { worldBoundary: WORLD, baseCat: BASE, obstacle: OBST, rainCat: RAIN } = categories;
+  const baseCatMask =
+    (collide.baseCat.withWorldBoundary ? WORLD : 0) |
+    (collide.baseCat.withBaseCat ? BASE : 0) |
+    (collide.baseCat.withObstacle ? OBST : 0) |
+    (collide.baseCat.withRainCat ? RAIN : 0);
+  const rainCatMask =
+    (collide.rainCat.withWorldBoundary ? WORLD : 0) |
+    (collide.rainCat.withBaseCat ? BASE : 0) |
+    (collide.rainCat.withObstacle ? OBST : 0) |
+    (collide.rainCat.withRainCat ? RAIN : 0);
+  return { baseCatMask, rainCatMask };
 }
 
 // World/bodies tunables
