@@ -411,3 +411,18 @@ a.site:hover {
     }
   }
 }
+
+/* Prevent double-tap zoom on interactive controls */
+#makeItRain,
+.js-questions,
+.js-spawn-cat,
+.js-remove-cat,
+.right-controls,
+.spawn-controls,
+.btn,
+button {
+  touch-action: manipulation; /* modern way to disable double-tap zoom on controls */
+  -webkit-tap-highlight-color: transparent;
+  /* Avoid iOS auto-zoom due to small text on form controls */
+  font-size: 16px; /* ensure >=16px on tappable elements */
+}
