@@ -127,13 +127,10 @@ a.site {
    ========================================================================== */
 
 .btn {
-  position: fixed;
-  top: 0;
   margin: 0.5rem;
   -webkit-appearance: none;
   border: none;
   outline: none;
-  padding: 5px;
   cursor: pointer;
   background: none;
   color: #fff;
@@ -143,15 +140,9 @@ a.site {
   font-size: 1rem;
   font-weight: normal;
   text-shadow: 3px 3px 1px rgba(0, 0, 0, 0.2);
-
-  &:hover {
-    opacity: 0.5;
-  }
 }
 
 .outline {
-  position: fixed;
-  top: 0;
   margin: 0.7rem;
   -webkit-appearance: none;
   border: 3px solid #fff;
@@ -165,11 +156,18 @@ a.site {
   font-size: 1.7rem;
   font-weight: normal;
   text-shadow: 2px 2px 1px rgba(0, 0, 0, 0.2);
+
+  &:hover,
+  &:focus {
+    opacity: 0.6;
+    //color: #666;
+    //text-decoration: none;
+  }
 }
 
 #makeItRain {
-  right: 0;
   cursor: pointer;
+  padding: 0;
 }
 
 .js-questions {
@@ -181,13 +179,9 @@ a.site {
    ========================================================================== */
 
 .right-controls {
-  position: fixed;
-  top: 0;
-  right: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  padding: 0.7rem;
   z-index: 5;
 
   #makeItRain {
@@ -204,17 +198,15 @@ a.site {
 }
 
 .spawn-controls {
-  margin-top: 0.5rem;
-  padding-right: 10px;
+  justify-content: space-between;
   display: flex;
   gap: 1rem;
   width: 100%;
-  justify-content: flex-end;
 }
 
 .topbar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   padding: 8px 12px;
@@ -227,7 +219,6 @@ a.site {
   &-right {
     display: flex;
     align-items: center;
-    gap: 10px;
     min-width: 0;
   }
 
@@ -280,11 +271,10 @@ a.site {
 }
 
 .wobble {
-  top: 0;
-  left: 40px;
   cursor: default;
   letter-spacing: 0.2rem;
   display: block;
+  align-content: center;
 
   span {
     position: relative;
@@ -356,8 +346,6 @@ a.site {
 @media only screen and (min-width: 414px) {
   .btn {
     font-size: 1.4rem;
-    padding: 5px 10px;
-    margin: 1rem;
     letter-spacing: 0.15rem;
   }
 
@@ -386,7 +374,7 @@ a.site {
   }
   .spawn-controls {
     gap: 0.6rem;
-    padding-right: 6px;
+    justify-content: space-between;
   }
 }
 
