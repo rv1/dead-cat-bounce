@@ -21,9 +21,9 @@ const rainbow_cats = [rcat_1, rcat_2, rcat_3, rcat_4, rcat_5, rcat_6];
 const Engine = Matter.Engine;
 const World = Matter.World;
 const Bodies = Matter.Bodies;
-const Events = Matter.Events;
+// const Events = Matter.Events;
 const Body = Matter.Body;
-const Composites = Matter.Composites;
+// const Composites = Matter.Composites;
 const MouseConstraint = Matter.MouseConstraint;
 const Mouse = Matter.Mouse;
 let engine = Engine.create();
@@ -38,34 +38,33 @@ const redCategory = 0x0002;
 const greenCategory = 0x0004;
 const blueCategory = 0x0008;
 const cArr = [];
-let rainbow = false;
+// Track rainbow mode if needed later (currently unused)
+// let rainbow = false;
 let isRaining = false;
-let rainInterval = null;
-let rainIntervalMs = 500;
+let spawnAccumulator = 0;
+const FIXED_MS = 1000 / 60;
+let lastMS = performance.now();
 let catRoundRobinIndex = 0;
 let rainbowRoundRobinIndex = 0;
-const RAIN_BATCH_SIZE = 8;
-const MAX_RAIN_BODIES = 160;
+// const RAIN_BATCH_SIZE = 8;
+// const MAX_RAIN_BODIES = 160;
 
 function setAnimatedButtonText(text, isContinuous) {
   const txt = document.querySelector('#makeItRain .txt');
   if (!txt) return;
-  const chars = (text || '').trim().split("");
-  txt.innerHTML = `<span>${chars.join('</span><span>')}</span>`;
-  if (isContinuous) {
-    txt.classList.remove('anim-text-flow-hover');
-    txt.classList.add('anim-text-flow');
-  } else {
-    txt.classList.remove('anim-text-flow');
-    txt.classList.add('anim-text-flow-hover');
+  if (txt.__lastText !== text) {
+    const chars = (text || '').trim().split("");
+    txt.innerHTML = `<span>${chars.join('</span><span>')}</span>`;
+    txt.__lastText = text;
   }
+  txt.classList.toggle('anim-text-flow', !!isContinuous);
+  txt.classList.toggle('anim-text-flow-hover', !isContinuous);
 }
 let width = window.innerWidth;
 let height = window.innerHeight;
 let sx = width >= 414 ? 1 : 0.5;
 let sy = width >= 414 ? 1 : 0.5;
-let count1 = 0;
-let count2 = 0;
+// legacy counters (unused)
 let pixiRenderer = null;
 const getRandomArbitrary = (min, max) => Math.random() * (max - min) + min;
 const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -88,6 +87,7 @@ const getMaxRainBodies = () => {
   if (w < 768) return 120;
   return 160;
 };
+/* Unused: generator kept for reference
 const generateCats = function generateCats(arr) {
   const width = window.innerWidth;
   const sx = width >= 414 ? 1 : 0.5;
@@ -119,6 +119,7 @@ const generateCats = function generateCats(arr) {
   });
   return stack;
 };
+*/
 const init = function init() {
   document.querySelectorAll('canvas').forEach((el) => el.remove());
   if (pixiRenderer) {
@@ -199,33 +200,69 @@ const init = function init() {
     }
   });
   World.add(engine.world, mouseConstraint);
-  Engine.run(engine);
-  // Cleanup rain cats that fall below the screen
-  Events.off(engine, 'afterUpdate');
-  Events.on(engine, 'afterUpdate', () => {
-    const h = window.innerHeight;
-    const w = window.innerWidth;
-    engine.world.bodies
-      .filter(b => b.label === 'rainCat' && (b.position.y > h + 120 || b.position.x < -150 || b.position.x > w + 150))
-      .forEach(b => World.remove(engine.world, b));
-    // Nudge base cats if they get stuck near the floor with low vertical speed
-    engine.world.bodies
-      .filter(b => b.label === 'baseCat')
-      .forEach(b => {
-        if (b.position.y > h - 120 && Math.abs(b.velocity.y) < 1.5) {
-          Body.setVelocity(b, { x: b.velocity.x, y: -18 - Math.random() * 6 });
-          Body.setAngularVelocity(b, 0.02 * getRandomArbitrary(-5, 5));
+  // Install Pixi-driven fixed timestep loop once
+  if (pixiRenderer?.app && !pixiRenderer.__loopInstalled) {
+    pixiRenderer.__loopInstalled = true;
+    pixiRenderer.app.ticker.add(() => {
+      const now = performance.now();
+      let dt = now - lastMS;
+      lastMS = now;
+      let acc = dt;
+      const hidden = document.hidden;
+      const targetRainMs = hidden ? 1200 : 500;
+      // snapshot previous state for interpolation
+      const bodies = engine.world.bodies;
+      for (let i = 0; i < bodies.length; i++) {
+        const b = bodies[i];
+        if (!b.render) b.render = {};
+        b.render.__prev = { x: b.position.x, y: b.position.y, angle: b.angle };
+      }
+      while (acc >= FIXED_MS) {
+        Engine.update(engine, FIXED_MS);
+        if (isRaining) {
+          spawnAccumulator += FIXED_MS;
+          if (spawnAccumulator >= targetRainMs) {
+            spawnRainBatch();
+            spawnAccumulator = 0;
+          }
         }
-      });
-    // Sync Pixi sprites with Matter bodies
-    if (pixiRenderer) {
-      pixiRenderer.syncBodies(
-        engine.world.bodies,
-        (body) => (body.render && body.render.sprite ? body.render.sprite.texture : null),
-        (body) => (body.render && body.render.sprite ? { xScale: body.render.sprite.xScale || 1, yScale: body.render.sprite.yScale || 1 } : { xScale: 1, yScale: 1 })
-      );
-    }
-  });
+        acc -= FIXED_MS;
+      }
+      // compute interpolation factor from remainder
+      const alpha = acc / FIXED_MS;
+      const h = window.innerHeight;
+      const w = window.innerWidth;
+      engine.world.bodies
+        .filter(b => b.label === 'rainCat' && (b.position.y > h + 120 || b.position.x < -150 || b.position.x > w + 150))
+        .forEach(b => World.remove(engine.world, b));
+      engine.world.bodies
+        .filter(b => b.label === 'baseCat')
+        .forEach(b => {
+          if (b.position.y > h - 120 && Math.abs(b.velocity.y) < 1.5) {
+            Body.setVelocity(b, { x: b.velocity.x, y: -18 - Math.random() * 6 });
+            Body.setAngularVelocity(b, 0.02 * getRandomArbitrary(-5, 5));
+          }
+        });
+      // write interpolated positions for renderer
+      for (let i = 0; i < bodies.length; i++) {
+        const b = bodies[i];
+        const p = b.render && b.render.__prev ? b.render.__prev : { x: b.position.x, y: b.position.y, angle: b.angle };
+        if (!b.render) b.render = {};
+        b.render.__interp = {
+          x: p.x + (b.position.x - p.x) * alpha,
+          y: p.y + (b.position.y - p.y) * alpha,
+          angle: p.angle + (b.angle - p.angle) * alpha
+        };
+      }
+      if (pixiRenderer) {
+        pixiRenderer.syncBodies(
+          engine.world.bodies,
+          (body) => (body.render && body.render.sprite ? body.render.sprite.texture : null),
+          (body) => (body.render && body.render.sprite ? { xScale: body.render.sprite.xScale || 1, yScale: body.render.sprite.yScale || 1 } : { xScale: 1, yScale: 1 })
+        );
+      }
+    });
+  }
 };
 const spawnRainBatch = () => {
   const width = window.innerWidth;
@@ -274,18 +311,15 @@ const spawnRainBatch = () => {
 const startRain = () => {
   if (isRaining) return;
   isRaining = true;
-  rainbow = true;
+  // rainbow = true;
   setAnimatedButtonText('Stop Rain', true);
   document.getElementById('makeItRain')?.classList.add('raining');
-  spawnRainBatch();
-  rainInterval = setInterval(spawnRainBatch, rainIntervalMs);
+  spawnAccumulator = 9999; // trigger immediate first batch in loop
 };
 
 const stopRain = () => {
   isRaining = false;
-  rainbow = false;
-  if (rainInterval) clearInterval(rainInterval);
-  rainInterval = null;
+  // rainbow = false;
   setAnimatedButtonText('Make It Rain', false);
   document.getElementById('makeItRain')?.classList.remove('raining');
 };
@@ -365,9 +399,4 @@ window.addEventListener('resize', () => {
 document.addEventListener('visibilitychange', () => {
   const hidden = document.hidden;
   engine.timing.timeScale = hidden ? 0.7 : 1;
-  rainIntervalMs = hidden ? 1200 : 500;
-  if (isRaining) {
-    if (rainInterval) clearInterval(rainInterval);
-    rainInterval = setInterval(spawnRainBatch, rainIntervalMs);
-  }
 });

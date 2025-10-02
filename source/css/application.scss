@@ -23,6 +23,13 @@ html {
     font-family: sans-serif;
 }
 
+canvas { display: block; }
+
+@media (prefers-reduced-motion: reduce) {
+    .wobble span { animation-duration: 2.4s; }
+    .anim-text-flow span { animation-duration: 20s !important; }
+}
+
 .modal {
     display: none;
     position: fixed;

@@ -31,10 +31,6 @@ export class PixiCatRenderer {
 
   resize(width, height) {
     this.app.renderer.resize(width, height)
-    // Ensure canvas CSS size matches logical size to avoid pointer offset
-    const view = this.app.view
-    view.style.width = width + 'px'
-    view.style.height = height + 'px'
   }
 
   setDebugEnabled(enabled) {
@@ -57,16 +53,15 @@ export class PixiCatRenderer {
     }
   }
 
-  ensureSpriteForBody(body, textureUrl, scaleX, scaleY) {
+  ensureSpriteForBody(body, textureUrl) {
     if (this.bodyIdToSprite.has(body.id)) return this.bodyIdToSprite.get(body.id)
     if (!textureUrl) return null
-    const baseTexture = PIXI.Texture.from(textureUrl)
-    const sprite = new PIXI.Sprite(baseTexture)
+    const sprite = new PIXI.Sprite(PIXI.Texture.from(textureUrl))
     sprite.anchor.set(0.5)
-    // Size sprite to match the Matter circle's diameter, adjusted by provided scale
-    const diameter = (body.circleRadius || 50) * 2
-    sprite.width = diameter * (scaleX || 1)
-    sprite.height = diameter * (scaleY || 1)
+    // cache last sizing to avoid redundant writes each frame
+    sprite.__lastDiameter = -1
+    sprite.__lastScaleX = -1
+    sprite.__lastScaleY = -1
     this.stage.addChild(sprite)
     this.bodyIdToSprite.set(body.id, sprite)
     return sprite
@@ -80,14 +75,24 @@ export class PixiCatRenderer {
       const texture = getTextureForBody(body)
       if (!texture) continue
       const { xScale, yScale } = getScaleForBody(body)
-      const sprite = this.ensureSpriteForBody(body, texture, xScale, yScale)
+      const sprite = this.ensureSpriteForBody(body, texture)
       if (!sprite) continue
-      // Ensure size stays in sync (useful if scale changes across resize thresholds)
+      // Size only when needed
       const diameter = (body.circleRadius || 50) * 2
-      sprite.width = diameter * (xScale || 1)
-      sprite.height = diameter * (yScale || 1)
-      sprite.position.set(body.position.x, body.position.y)
-      sprite.rotation = body.angle
+      const sx = xScale || 1
+      const sy = yScale || 1
+      if (sprite.__lastDiameter !== diameter || sprite.__lastScaleX !== sx || sprite.__lastScaleY !== sy) {
+        sprite.width = diameter * sx
+        sprite.height = diameter * sy
+        sprite.__lastDiameter = diameter
+        sprite.__lastScaleX = sx
+        sprite.__lastScaleY = sy
+      }
+      const interp = body.render && body.render.__interp
+        ? body.render.__interp
+        : { x: body.position.x, y: body.position.y, angle: body.angle }
+      sprite.position.set(interp.x, interp.y)
+      sprite.rotation = interp.angle
       seen.add(body.id)
       // Draw physics (clickable) area outline for debugging
       if (this.debugEnabled && this.debugGraphics && body.circleRadius) {

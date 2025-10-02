@@ -1,8 +1,33 @@
 const modal = document.getElementById('myModal');
-const btn = document.querySelector('.js-questions');
-const span = document.getElementsByClassName("close")[0];
-if (btn) btn.onclick = function () { modal.style.display = "block"; }
-span.onclick = function () { modal.style.display = "none"; }
-window.onclick = function (event) {
-    if (event.target == modal) { modal.style.display = "none"; }
+const openBtn = document.querySelector('.js-questions');
+const closeBtn = modal?.querySelector('.close');
+
+if (modal && openBtn && closeBtn) {
+  const openedClass = 'is-open';
+  let lastFocused = null;
+
+  const onKey = (e) => {
+    if (e.key === 'Escape') close();
+  };
+
+  const open = () => {
+    lastFocused = document.activeElement;
+    modal.classList.add(openedClass);
+    modal.style.display = 'block';
+    closeBtn.focus();
+    document.addEventListener('keydown', onKey);
+  };
+
+  const close = () => {
+    modal.classList.remove(openedClass);
+    modal.style.display = 'none';
+    document.removeEventListener('keydown', onKey);
+    if (lastFocused && lastFocused.focus) lastFocused.focus();
+  };
+
+  openBtn.addEventListener('click', open);
+  closeBtn.addEventListener('click', close);
+  modal.addEventListener('click', (e) => {
+    if (!e.target.closest('.modal-content')) close();
+  });
 }

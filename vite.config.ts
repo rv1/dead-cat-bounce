@@ -27,7 +27,7 @@ export default defineConfig({
           if (id.includes('node_modules')) {
             if (id.includes('pixi')) return 'vendor_pixi'
             if (id.includes('matter-js')) return 'vendor_matter'
-            if (id.includes('lodash')) return 'vendor_lodash'
+            // lodash no longer used
             return 'vendor'
           }
         }
