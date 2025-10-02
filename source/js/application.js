@@ -125,7 +125,7 @@ const init = function init() {
     }),
   ]);
   const baseRadius = getCatRadius();
-  cats.forEach((i, v) => {
+  rainbow_cats.forEach((i, v) => {
     const startX = (width / 7) * (v + 1);
     const baseRestitution = pickInRange(tunables.baseCat.restitution);
     const baseFriction = pickInRange(tunables.baseCat.friction);
@@ -240,10 +240,7 @@ const spawnRainBatch = () => {
   const toSpawn = Math.min(targetBatch, Math.max(0, remaining));
   const bodies = [];
   for (let i = 0; i < toSpawn; i++) {
-    const useRainbow = Math.random() < 0.2;
-    const texture = useRainbow
-      ? rainbow_cats[rainbowRoundRobinIndex++ % rainbow_cats.length]
-      : cats[catRoundRobinIndex++ % cats.length];
+    const texture = cats[catRoundRobinIndex++ % cats.length];
     const x = getRandomArbitrary(50, width - 50);
     const y = -200 - getRandomArbitrary(0, 200);
     const body = Bodies.circle(x, y, getCatRadius(), {
@@ -312,10 +309,7 @@ mirain?.addEventListener("click", () => {
 const spawnOneCatInView = () => {
   const w = window.innerWidth;
   const h = window.innerHeight;
-  const useRainbow = Math.random() < 0.2;
-  const texture = useRainbow
-    ? rainbow_cats[rainbowRoundRobinIndex++ % rainbow_cats.length]
-    : cats[catRoundRobinIndex++ % cats.length];
+  const texture = rainbow_cats[rainbowRoundRobinIndex++ % rainbow_cats.length];
   const x = getRandomArbitrary(80, w - 80);
   const y = getRandomArbitrary(120, h - 220);
   const body = Bodies.circle(x, y, 100, {
@@ -345,21 +339,21 @@ const spawnOneCatInView = () => {
   });
 };
 
-// Remove a random cat currently visible within the viewport
+// Remove a random BASE cat (rainbow texture) currently visible within the viewport
 const removeOneCatInView = () => {
   const w = window.innerWidth;
   const h = window.innerHeight;
-  const visibleCats = engine.world.bodies.filter(
+  const visibleBaseCats = engine.world.bodies.filter(
     (b) =>
-      (b.label === "baseCat" || b.label === "rainCat") &&
+      b.label === "baseCat" &&
       b.position.x >= -20 &&
       b.position.x <= w + 20 &&
       b.position.y >= -20 &&
       b.position.y <= h + 20,
   );
-  if (!visibleCats.length) return;
-  const idx = getRandomInt(0, visibleCats.length - 1);
-  World.remove(engine.world, visibleCats[idx]);
+  if (!visibleBaseCats.length) return;
+  const idx = getRandomInt(0, visibleBaseCats.length - 1);
+  World.remove(engine.world, visibleBaseCats[idx]);
 };
 
 document
