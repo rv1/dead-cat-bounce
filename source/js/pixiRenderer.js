@@ -15,6 +15,7 @@ export class PixiCatRenderer {
     });
     document.body.appendChild(this.app.view);
     this.stage = this.app.stage;
+    this.stage.sortableChildren = true;
     this.textures = textures;
     this.bodyIdToSprite = new Map();
     this.dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -24,6 +25,7 @@ export class PixiCatRenderer {
     if (this.debugEnabled) {
       this.debugGraphics = new PIXI.Graphics();
       this.debugGraphics.alpha = 0.9;
+      this.debugGraphics.zIndex = 9999;
       this.stage.addChild(this.debugGraphics);
     }
     this.resize(width, height);
@@ -59,6 +61,8 @@ export class PixiCatRenderer {
     if (!textureUrl) return null;
     const sprite = new PIXI.Sprite(PIXI.Texture.from(textureUrl));
     sprite.anchor.set(0.5);
+    // Ensure consistent layering: rain cats behind base cats
+    sprite.zIndex = body.label === "rainCat" ? 0 : 1;
     // Cache last sizing to avoid redundant writes each frame
     sprite.__lastDiameter = -1;
     sprite.__lastScaleX = -1;
@@ -92,6 +96,9 @@ export class PixiCatRenderer {
         sprite.__lastScaleX = sx;
         sprite.__lastScaleY = sy;
       }
+      // Keep zIndex consistent in case labels change dynamically
+      const desiredZ = body.label === "rainCat" ? 0 : 1;
+      if (sprite.zIndex !== desiredZ) sprite.zIndex = desiredZ;
       sprite.position.set(body.position.x, body.position.y);
       sprite.rotation = body.angle;
       seen.add(body.id);

@@ -7,6 +7,7 @@ import {
   tunables,
   pickInRange,
 } from "@/js/physicsConfig.js";
+import { collide } from "@/js/physicsConfig.js";
 import { PixiCatRenderer } from "@/js/pixiRenderer.js";
 
 import cat_1 from "@/img/cats/cat_1.png";
@@ -110,20 +111,32 @@ const init = function init() {
     textures: { cats, rainbow_cats },
   });
   document.body.style.backgroundImage = `linear-gradient(${orientation}, ${colorOne}, ${colorTwo})`;
-  World.add(engine.world, [
-    Bodies.rectangle(width / 2, height + 50, width, 100, {
-      isStatic: true,
-    }),
-    Bodies.rectangle(width / 2, -50, width, 100, {
-      isStatic: true,
-    }),
-    Bodies.rectangle(-100, height / 2, 200, height, {
-      isStatic: true,
-    }),
-    Bodies.rectangle(width + 100, height / 2, 200, height, {
-      isStatic: true,
-    }),
-  ]);
+  const floor = Bodies.rectangle(width / 2, height + 50, width, 100, {
+    isStatic: true,
+    label: "worldFloor",
+    collisionFilter: { category: categories.worldBoundary, mask: 0xffff },
+  });
+  // Top boundary: allow rain cats to enter from above when configured.
+  const ceilMask =
+    (collide.rainCat.withWorldBoundary ? 0 : categories.rainCat) |
+    categories.baseCat |
+    categories.obstacle;
+  const ceiling = Bodies.rectangle(width / 2, -50, width, 100, {
+    isStatic: true,
+    label: "worldCeiling",
+    collisionFilter: { category: categories.worldBoundary, mask: ceilMask },
+  });
+  const wallLeft = Bodies.rectangle(-100, height / 2, 200, height, {
+    isStatic: true,
+    label: "worldWallLeft",
+    collisionFilter: { category: categories.worldBoundary, mask: 0xffff },
+  });
+  const wallRight = Bodies.rectangle(width + 100, height / 2, 200, height, {
+    isStatic: true,
+    label: "worldWallRight",
+    collisionFilter: { category: categories.worldBoundary, mask: 0xffff },
+  });
+  World.add(engine.world, [floor, ceiling, wallLeft, wallRight]);
   const baseRadius = getCatRadius();
   rainbow_cats.forEach((i, v) => {
     const startX = (width / 7) * (v + 1);

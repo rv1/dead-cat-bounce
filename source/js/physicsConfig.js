@@ -9,7 +9,6 @@ export const collide = {
     withWorldBoundary: true,
     withBaseCat: true,
     withObstacle: false,
-    withRainCat: true,
   },
   // Rain cats fall through world boundaries and base cats, can bounce with rain/obstacle
   rainCat: {
@@ -68,7 +67,7 @@ export function buildMasks() {
     (collide.baseCat.withWorldBoundary ? WORLD : 0) |
     (collide.baseCat.withBaseCat ? BASE : 0) |
     (collide.baseCat.withObstacle ? OBST : 0) |
-    (collide.baseCat.withRainCat ? RAIN : 0);
+    RAIN;
   const rainCatMask =
     (collide.rainCat.withWorldBoundary ? WORLD : 0) |
     (collide.rainCat.withBaseCat ? BASE : 0) |
